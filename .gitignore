@@ -1,16 +1,47 @@
 # Entorno virtual
 venv/
-.env
+.venv/
 
-# Python
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
 
-# Alembic
-alembic/versions/*.pyc
+# Variables de entorno
+.env
+.env.*
 
-# VSCode
+# Base de datos local
+*.sqlite
+*.db
+
+# PostgreSQL dumps
+*.sql
+
+# Alembic cache
+alembic/__pycache__/
+
+# Logs
+*.log
+
+# Sistema operativo
 .vscode/
-
-# OS
+.idea/
 .DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+
+# Variables de Python
+*.egg-info/
+
+# Compilados
+build/
+dist/
+
+# Test
+.pytest_cache/
+.coverage
+
+# Archivos de configuración personales
+config.local.*

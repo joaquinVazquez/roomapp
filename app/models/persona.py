@@ -1,18 +1,46 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 from datetime import datetime
-from app.db.base import Base
+
+from app.db.base_class import Base
+
 
 class Persona(Base):
+
     __tablename__ = "personas"
 
-    id = Column(Integer, primary_key=True, index=True)
-    nombres = Column(String, nullable=False)
-    apellido_paterno = Column(String, nullable=False)
-    apellido_materno = Column(String, nullable=True)
-    telefono = Column(String, nullable=True)
-    correo_personal = Column(String, nullable=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
-    activo = Column(Boolean, default=True)
+    nombre = Column(
+        String,
+        nullable=False
+    )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    apellido = Column(
+        String,
+        nullable=False
+    )
+
+    email = Column(
+        String,
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+
+    # Relación 1 persona = 1 usuario
+    usuario = relationship(
+        "Usuario",
+        back_populates="persona",
+        uselist=False
+    )

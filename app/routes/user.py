@@ -1,51 +1,49 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.schemas.user import UserCreate, UserLogin
-from app.models.user import User
+from app.schemas.user import UserLogin
+from app.models.usuario import Usuario
 from app.db.session import get_db
-from app.core.security import hash_password, verify_password
-from app.core.security import create_access_token
-from app.core.security import require_roles
+from app.core.security import verify_password, create_access_token, require_roles
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
 
 # 🔹 ENDPOINT 1 — CREAR USUARIO
-@router.post("/users")
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+# @router.post("/users")
+# def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
-    new_user = User(
-        nombre=user.nombre,
-        email=user.email,
-        password=hash_password(user.password),
-        rol_id=user.rol_id
-    )
+#     new_user = User(
+#         nombre=user.nombre,
+#         email=user.email,
+#         password=hash_password(user.password),
+#         rol_id=user.rol_id
+#     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+#     db.add(new_user)
+#     db.commit()
+#     db.refresh(new_user)
 
-    return {"message": "Usuario creado correctamente"}
+#     return {"message": "Usuario creado correctamente"}
 
 
 # 🔹 ENDPOINT 2 — LOGIN 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
-    db_user = db.query(User).filter(User.email == user.email).first()
+    db_user = db.query(Usuario).filter(Usuario.email == form_data.username).first()
 
     if not db_user:
         return {"error": "Usuario no encontrado"}
 
-    if not verify_password(user.password, db_user.password):
+    if not verify_password(form_data.password, db_user.password_hash):
         return {"error": "Contraseña incorrecta"}
 
     access_token = create_access_token(
-    data={
-        "user_id": db_user.id,
-        "rol_id": db_user.rol_id
-    }
+        data={
+            "user_id": db_user.id
+        }
     )
 
     return {
@@ -54,5 +52,5 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.get("/admin-only")
-def admin_only(user = Depends(require_roles(1))):
+def admin_only(user = Depends(require_roles("ADMINISTRADOR"))):
     return {"message": "Bienvenido administrador"}

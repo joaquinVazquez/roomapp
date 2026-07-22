@@ -8,15 +8,16 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.usuario import Usuario
+from app.models.rol import Rol
 
 SECRET_KEY = "tu_clave_secreta_super_segura"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
 
 def hash_password(password: str) -> str:
-    # Evitar doble hash
     if password.startswith("$2b$"):
         return password
     return pwd_context.hash(password)
@@ -29,8 +30,6 @@ def create_access_token(data: dict):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-security = HTTPBearer()
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -48,19 +47,38 @@ def get_current_user(
     except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(Usuario).filter(Usuario.id == user_id).first()
 
     if user is None:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
     return user
 
-def require_roles(*roles_ids):
-    def role_checker(current_user: User = Depends(get_current_user)):
-        if current_user.rol_id not in roles_ids:
+def require_roles(*roles_permitidos):
+
+    def role_checker(
+        current_user: Usuario = Depends(get_current_user),
+        db: Session = Depends(get_db)
+    ):
+
+        rol_usuario = (
+            db.query(Rol)
+            .filter(Rol.id == current_user.rol_id)
+            .first()
+        )
+
+        if not rol_usuario:
             raise HTTPException(
                 status_code=403,
-                detail="No tienes permisos suficientes"
+                detail="Usuario sin rol asignado"
             )
+
+        if rol_usuario.nombre not in roles_permitidos:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos para acceder a este recurso"
+            )
+
         return current_user
+
     return role_checker

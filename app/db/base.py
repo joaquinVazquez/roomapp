@@ -1,3 +1,5 @@
-from sqlalchemy.orm import declarative_base
+from app.db.base_class import Base
 
-Base = declarative_base()
+from app.models.usuario import Usuario
+from app.models.rol import Rol
+from app.models.persona import Persona
