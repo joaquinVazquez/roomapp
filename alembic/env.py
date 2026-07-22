@@ -5,7 +5,16 @@ from sqlalchemy import pool
 
 from alembic import context
 from app.db.base import Base
-from app.models import persona, usuario, rol, usuario_rol
+from app.models import (
+    persona,
+    usuario,
+    rol,
+    usuario_rol,
+    programa,
+    materia,
+    programa_materia
+)
+from app.models import programa, materia, programa_materia
 from alembic import context
 import os
 from dotenv import load_dotenv
