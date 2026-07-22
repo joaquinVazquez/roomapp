@@ -67,11 +67,13 @@ def require_roles(*roles_permitidos):
             .first()
         )
 
+
         if not rol_usuario:
             raise HTTPException(
                 status_code=403,
                 detail="Usuario sin rol asignado"
             )
+
 
         if rol_usuario.nombre not in roles_permitidos:
             raise HTTPException(
@@ -79,6 +81,8 @@ def require_roles(*roles_permitidos):
                 detail="No tienes permisos para acceder a este recurso"
             )
 
+
         return current_user
+
 
     return role_checker

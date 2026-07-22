@@ -19,6 +19,7 @@ __pycache__/
 
 # Alembic cache
 alembic/__pycache__/
+alembic
 
 # Logs
 *.log
