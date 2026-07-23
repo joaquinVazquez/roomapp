@@ -61,3 +61,8 @@ class Usuario(Base):
     rol = relationship(
         "Rol"
     )
+
+    actividades_academicas = relationship(
+    "ActividadAcademica",
+    back_populates="materia"
+    )

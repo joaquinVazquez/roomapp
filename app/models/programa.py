@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from app.db.base_class import Base
+from sqlalchemy.orm import relationship
 
 
 class Programa(Base):
@@ -33,4 +34,14 @@ class Programa(Base):
     created_at = Column(
         DateTime,
         default=datetime.utcnow
+    )
+
+    materias = relationship(
+    "ProgramaMateria",
+    back_populates="programa"
+    )
+
+    grupos = relationship(
+    "Grupo",
+    back_populates="programa"
     )

@@ -35,9 +35,11 @@ class ProgramaMateria(Base):
     )
 
     programa = relationship(
-        "Programa"
+        "Programa",
+        back_populates="materias"
     )
 
     materia = relationship(
-        "Materia"
+        "Materia",
+        back_populates="programas"
     )

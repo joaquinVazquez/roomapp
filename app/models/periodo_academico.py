@@ -1,12 +1,21 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from app.db.base_class import Base
 from sqlalchemy.orm import relationship
 
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Integer,
+    String,
+)
 
-class Materia(Base):
+from app.db.base_class import Base
 
-    __tablename__ = "materias"
+
+class PeriodoAcademico(Base):
+
+    __tablename__ = "periodos_academicos"
 
     id = Column(
         Integer,
@@ -22,13 +31,18 @@ class Materia(Base):
     )
 
     nombre = Column(
-        String(150),
+        String(100),
         nullable=False
     )
 
-    descripcion = Column(
-        String(255),
-        nullable=True
+    fecha_inicio = Column(
+        Date,
+        nullable=False
+    )
+
+    fecha_fin = Column(
+        Date,
+        nullable=False
     )
 
     activo = Column(
@@ -41,7 +55,7 @@ class Materia(Base):
         default=datetime.utcnow
     )
 
-    programas = relationship(
-    "ProgramaMateria",
-    back_populates="materia"
+    grupos = relationship(
+    "Grupo",
+    back_populates="periodo_academico"
     )
