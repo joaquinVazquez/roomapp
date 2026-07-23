@@ -64,5 +64,5 @@ class Usuario(Base):
 
     actividades_academicas = relationship(
     "ActividadAcademica",
-    back_populates="materia"
+    back_populates="docente"
     )

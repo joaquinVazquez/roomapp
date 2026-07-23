@@ -1,12 +1,20 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from app.db.base_class import Base
 from sqlalchemy.orm import relationship
 
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+)
 
-class Materia(Base):
+from app.db.base_class import Base
 
-    __tablename__ = "materias"
+
+class Aula(Base):
+
+    __tablename__ = "aulas"
 
     id = Column(
         Integer,
@@ -22,8 +30,23 @@ class Materia(Base):
     )
 
     nombre = Column(
-        String(150),
+        String(100),
         nullable=False
+    )
+
+    capacidad = Column(
+        Integer,
+        nullable=False
+    )
+
+    tipo = Column(
+        String(50),
+        nullable=False
+    )
+
+    ubicacion = Column(
+        String(100),
+        nullable=True
     )
 
     descripcion = Column(
@@ -41,12 +64,7 @@ class Materia(Base):
         default=datetime.utcnow
     )
 
-    programas = relationship(
-    "ProgramaMateria",
-    back_populates="materia"
-    )
-
-    actividades_academicas = relationship(
-        "ActividadAcademica",
-        back_populates="materia"
-    )
+    horarios = relationship(
+    "Horario",
+    back_populates="aula"
+)
