@@ -8,6 +8,10 @@ from app.routes import programas
 from app.routes import materias
 from app.routes import programa_materias
 from app.routes import aulas
+from app.routes import horarios
+from app.routes import periodo_academico
+from app.routes import actividades_academicas
+from app.routes import grupo
 
 app = FastAPI()
 
@@ -18,6 +22,11 @@ app.include_router(programas.router)
 app.include_router(materias.router)
 app.include_router(programa_materias.router)
 app.include_router(aulas.router)
+app.include_router(horarios.router)
+app.include_router(periodo_academico.router)
+app.include_router(actividades_academicas.router)
+app.include_router(grupo.router)
+
 
 @app.get("/")
 def root():

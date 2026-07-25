@@ -16,13 +16,9 @@ router = APIRouter(
     tags=["Periodos Académicos"]
 )
 
-
-@router.post(
-    "/",
-    response_model=PeriodoAcademicoResponse
-)
-
-
+# =============================
+# 📌 GET - LISTAR TODOS
+# =============================
 @router.get(
     "/",
     response_model=list[PeriodoAcademicoResponse]
@@ -36,16 +32,20 @@ def get_periodos_academicos(
         )
     ),
 ):
-
     return (
         db.query(PeriodoAcademico)
-        .order_by(
-            PeriodoAcademico.fecha_inicio
-        )
+        .order_by(PeriodoAcademico.fecha_inicio)
         .all()
     )
 
 
+# =============================
+# 📌 POST - CREAR
+# =============================
+@router.post(
+    "/",
+    response_model=PeriodoAcademicoResponse
+)
 def create_periodo_academico(
     periodo: PeriodoAcademicoCreate,
     db: Session = Depends(get_db),
@@ -59,32 +59,28 @@ def create_periodo_academico(
 
     periodo_existente = (
         db.query(PeriodoAcademico)
-        .filter(
-            PeriodoAcademico.clave == periodo.clave
-        )
+        .filter(PeriodoAcademico.clave == periodo.clave)
         .first()
     )
 
     if periodo_existente:
-
         raise HTTPException(
             status_code=400,
             detail="La clave del periodo académico ya existe."
         )
 
-    nuevo_periodo = PeriodoAcademico(
-        **periodo.model_dump()
-    )
+    nuevo_periodo = PeriodoAcademico(**periodo.model_dump())
 
     db.add(nuevo_periodo)
-
     db.commit()
-
     db.refresh(nuevo_periodo)
 
     return nuevo_periodo
 
 
+# =============================
+# 📌 GET - POR ID
+# =============================
 @router.get(
     "/{periodo_id}",
     response_model=PeriodoAcademicoResponse
@@ -102,14 +98,11 @@ def get_periodo_academico(
 
     periodo_db = (
         db.query(PeriodoAcademico)
-        .filter(
-            PeriodoAcademico.id == periodo_id
-        )
+        .filter(PeriodoAcademico.id == periodo_id)
         .first()
     )
 
     if not periodo_db:
-
         raise HTTPException(
             status_code=404,
             detail="Periodo académico no encontrado."
@@ -117,6 +110,10 @@ def get_periodo_academico(
 
     return periodo_db
 
+
+# =============================
+# 📌 PUT - ACTUALIZAR
+# =============================
 @router.put(
     "/{periodo_id}",
     response_model=PeriodoAcademicoResponse
@@ -133,57 +130,39 @@ def update_periodo_academico(
     ),
 ):
 
-    periodo_db = (
-        db.query(PeriodoAcademico)
-        .filter(
-            PeriodoAcademico.id == periodo_id
-        )
-        .first()
-    )
+    periodo_db = db.query(PeriodoAcademico).filter(
+        PeriodoAcademico.id == periodo_id
+    ).first()
 
     if not periodo_db:
-
         raise HTTPException(
             status_code=404,
             detail="Periodo académico no encontrado."
         )
 
-    if (
-        datos.clave
-        and datos.clave != periodo_db.clave
-    ):
+    if datos.clave and datos.clave != periodo_db.clave:
+        existe = db.query(PeriodoAcademico).filter(
+            PeriodoAcademico.clave == datos.clave
+        ).first()
 
-        periodo_existente = (
-            db.query(PeriodoAcademico)
-            .filter(
-                PeriodoAcademico.clave == datos.clave
-            )
-            .first()
-        )
-
-        if periodo_existente:
-
+        if existe:
             raise HTTPException(
                 status_code=400,
                 detail="La clave del periodo académico ya existe."
             )
 
-    for campo, valor in datos.model_dump(
-        exclude_unset=True
-    ).items():
-
-        setattr(
-            periodo_db,
-            campo,
-            valor
-        )
+    for campo, valor in datos.model_dump(exclude_unset=True).items():
+        setattr(periodo_db, campo, valor)
 
     db.commit()
-
     db.refresh(periodo_db)
 
     return periodo_db
 
+
+# =============================
+# 📌 DELETE
+# =============================
 @router.delete(
     "/{periodo_id}"
 )
@@ -198,23 +177,17 @@ def delete_periodo_academico(
     ),
 ):
 
-    periodo_db = (
-        db.query(PeriodoAcademico)
-        .filter(
-            PeriodoAcademico.id == periodo_id
-        )
-        .first()
-    )
+    periodo_db = db.query(PeriodoAcademico).filter(
+        PeriodoAcademico.id == periodo_id
+    ).first()
 
     if not periodo_db:
-
         raise HTTPException(
             status_code=404,
             detail="Periodo académico no encontrado."
         )
 
     db.delete(periodo_db)
-
     db.commit()
 
     return {

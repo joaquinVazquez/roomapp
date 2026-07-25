@@ -10,3 +10,4 @@ from .grupo import Grupo
 from .actividad_academica import ActividadAcademica
 from .aula import Aula
 from app.models.horario import Horario
+from app.models.dia_semana import DiaSemana

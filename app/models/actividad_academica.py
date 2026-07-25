@@ -84,4 +84,15 @@ class ActividadAcademica(Base):
     "Horario",
     back_populates="actividad_academica"
     )
+
+    periodo_academico_id = Column(
+    Integer,
+    ForeignKey("periodos_academicos.id"),
+    nullable=False
+    )
+
+    periodo_academico = relationship(
+    "PeriodoAcademico",
+    back_populates="actividades_academicas"
+    )
     

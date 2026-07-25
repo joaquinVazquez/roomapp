@@ -59,3 +59,8 @@ class PeriodoAcademico(Base):
     "Grupo",
     back_populates="periodo_academico"
     )
+
+    actividades_academicas = relationship(
+    "ActividadAcademica",
+    back_populates="periodo_academico"
+    )

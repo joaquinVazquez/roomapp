@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     Column,
     Integer,
     String,
@@ -29,9 +30,10 @@ class Horario(Base):
         nullable=False
     )
 
-    dia_semana = Column(
-        String(20),
-        nullable=False
+    dia_semana_id = Column(
+    Integer,
+    ForeignKey("dias_semana.id"),
+    nullable=False
     )
 
     hora_inicio = Column(
@@ -47,7 +49,12 @@ class Horario(Base):
     aula_id = Column(
         Integer,
         ForeignKey("aulas.id"),
-        nullable=False
+        nullable=True
+    )
+
+    activo = Column(
+        Boolean,
+        default=True
     )
 
     created_at = Column(
@@ -65,4 +72,9 @@ class Horario(Base):
     aula = relationship(
         "Aula",
         back_populates="horarios"
+    )
+
+    dia_semana = relationship(
+    "DiaSemana",
+    back_populates="horarios"
     )
