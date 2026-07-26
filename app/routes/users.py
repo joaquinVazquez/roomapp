@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 
 from app.db.session import get_db
 
@@ -8,58 +7,60 @@ from app.models.usuario import Usuario
 from app.models.persona import Persona
 from app.models.rol import Rol
 
-from app.schemas.user import UserCreate
+from app.schemas.usuario import UsuarioCreate
 
 from app.core.security import hash_password
 
+router = APIRouter(
+    prefix="/users",
+    tags=["Usuarios"]
+)
 
-router = APIRouter()
 
+# =========================
+# CREAR USUARIO
+# =========================
 
-@router.post("/users")
+@router.post("/")
 def create_user(
-    user: UserCreate,
+    user: UsuarioCreate,
     db: Session = Depends(get_db)
 ):
 
-    rol = (
-        db.query(Rol)
-        .filter(Rol.id == user.rol_id)
-        .first()
-    )
-
+    # 🔹 Validar rol
+    rol = db.query(Rol).filter(
+        Rol.id == user.rol_id
+    ).first()
 
     if not rol:
-        return {
-            "error": "El rol no existe"
-        }
+        raise HTTPException(
+            status_code=404,
+            detail="El rol no existe"
+        )
 
-
-    existe = (
-        db.query(Persona)
-        .filter(Persona.email == user.email)
-        .first()
-    )
-
+    # 🔹 Validar correo duplicado
+    existe = db.query(Persona).filter(
+        Persona.email == user.email
+    ).first()
 
     if existe:
-        return {
-            "error": "El correo ya existe"
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="El correo ya existe"
+        )
 
-
+    # 🔹 Crear persona
     persona = Persona(
         nombre=user.nombre,
         apellido=user.apellido,
         email=user.email
     )
 
-
     db.add(persona)
     db.commit()
     db.refresh(persona)
 
-
+    # 🔹 Crear usuario
     usuario = Usuario(
         persona_id=persona.id,
         rol_id=user.rol_id,
@@ -68,11 +69,9 @@ def create_user(
         activo=True
     )
 
-
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
-
 
     return {
         "message": "Usuario creado correctamente",

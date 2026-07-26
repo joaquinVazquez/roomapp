@@ -65,7 +65,7 @@ def create_actividad(
         ActividadAcademica.grupo_id == data.grupo_id,
         ActividadAcademica.materia_id == data.materia_id,
         ActividadAcademica.bloque == data.bloque,
-        ActividadAcademica.periodo_academico_id == data.periodo_academico_id
+        #ActividadAcademica.periodo_academico_id == data.periodo_academico_id
     ).first()
 
     if existe:

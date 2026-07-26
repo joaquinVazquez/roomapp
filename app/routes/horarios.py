@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.services.horario_service import validar_conflictos
 
 from app.db.session import get_db
 from app.models.horario import Horario
@@ -21,19 +22,25 @@ router = APIRouter(
     "/",
     response_model=HorarioResponse
 )
+
+@router.post(
+    "/",
+    response_model=HorarioResponse
+)
 def crear_horario(
     horario: HorarioCreate,
     db: Session = Depends(get_db)
 ):
+
+    # 🔥 VALIDACIÓN CENTRALIZADA
+    validar_conflictos(db, horario)
 
     nuevo_horario = Horario(
         **horario.model_dump()
     )
 
     db.add(nuevo_horario)
-
     db.commit()
-
     db.refresh(nuevo_horario)
 
     return nuevo_horario
@@ -174,3 +181,105 @@ def eliminar_horario(
     return {
         "message": "Horario desactivado correctamente"
     }
+
+@router.get("/docente/{docente_id}")
+def horario_por_docente(
+    docente_id: int,
+    db: Session = Depends(get_db)
+):
+
+    horarios = (
+        db.query(Horario)
+        .join(Horario.actividad_academica)
+        .join(Horario.dia_semana)
+        .outerjoin(Horario.aula)
+        .all()
+    )
+
+    resultado = []
+
+    for h in horarios:
+
+        if h.actividad_academica.docente_id != docente_id:
+            continue
+
+        resultado.append({
+            "id": h.id,
+            "dia": h.dia_semana.nombre,
+            "hora_inicio": str(h.hora_inicio),
+            "hora_fin": str(h.hora_fin),
+            "aula": h.aula.nombre if h.aula else None,
+            "materia": h.actividad_academica.materia.nombre,
+            "grupo": h.actividad_academica.grupo.nombre,
+            "docente": h.actividad_academica.docente.persona.nombre
+        })
+
+    return resultado
+
+@router.get("/grupo/{grupo_id}")
+def horario_por_grupo(
+    grupo_id: int,
+    db: Session = Depends(get_db)
+):
+
+    horarios = (
+        db.query(Horario)
+        .join(Horario.actividad_academica)
+        .join(Horario.dia_semana)
+        .outerjoin(Horario.aula)
+        .all()
+    )
+
+    resultado = []
+
+    for h in horarios:
+
+        if h.actividad_academica.grupo_id != grupo_id:
+            continue
+
+        resultado.append({
+            "id": h.id,
+            "dia": h.dia_semana.nombre,
+            "hora_inicio": str(h.hora_inicio),
+            "hora_fin": str(h.hora_fin),
+            "aula": h.aula.nombre if h.aula else None,
+            "materia": h.actividad_academica.materia.nombre,
+            "grupo": h.actividad_academica.grupo.nombre,
+            "docente": h.actividad_academica.docente.persona.nombre
+        })
+
+    return resultado
+
+@router.get("/aula/{aula_id}")
+def horario_por_aula(
+    aula_id: int,
+    db: Session = Depends(get_db)
+):
+
+    horarios = (
+        db.query(Horario)
+        .join(Horario.actividad_academica)
+        .join(Horario.dia_semana)
+        .outerjoin(Horario.aula)
+        .all()
+    )
+
+    resultado = []
+
+    for h in horarios:
+
+        if h.aula_id != aula_id:
+            continue
+
+        resultado.append({
+            "id": h.id,
+            "dia": h.dia_semana.nombre,
+            "hora_inicio": str(h.hora_inicio),
+            "hora_fin": str(h.hora_fin),
+            "aula": h.aula.nombre if h.aula else None,
+            "materia": h.actividad_academica.materia.nombre,
+            "grupo": h.actividad_academica.grupo.nombre,
+            "docente": h.actividad_academica.docente.persona.nombre
+        })
+
+    return resultado
