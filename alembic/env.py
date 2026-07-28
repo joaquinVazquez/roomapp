@@ -9,7 +9,7 @@ from app.models import (
     persona,
     usuario,
     rol,
-    usuario_rol,
+    #usuario_rol,
     programa,
     materia,
     programa_materia

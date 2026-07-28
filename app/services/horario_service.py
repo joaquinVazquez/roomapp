@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.horario import Horario
 from app.models.actividad_academica import ActividadAcademica
 from fastapi import HTTPException
+from app.models.aula import Aula
 
 
 def validar_conflictos(db: Session, horario_data):
@@ -92,3 +93,51 @@ def obtener_horarios_por_docente(db, docente_id):
         .filter(Horario.actividad_academica.has(docente_id=docente_id))
         .all()
     )
+
+def reasignar_aula(db: Session, horario_id: int, nueva_aula_id: int):
+
+    horario = db.query(Horario).filter(Horario.id == horario_id).first()
+
+    if not horario:
+        raise HTTPException(status_code=404, detail="Horario no encontrado")
+
+    aula = (
+    db.query(Aula)
+    .filter(Aula.id == nueva_aula_id)
+    .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="El aula seleccionada no existe"
+        )
+
+    
+    # 🔥 VALIDAR CONFLICTO DE AULA
+    conflicto = (
+        db.query(Horario)
+        .filter(
+            Horario.aula_id == nueva_aula_id,
+            Horario.dia_semana_id == horario.dia_semana_id,
+            Horario.hora_inicio < horario.hora_fin,
+            Horario.hora_fin > horario.hora_inicio,
+            Horario.id != horario_id,
+            Horario.activo == True
+        )
+        .first()
+    )
+
+    if conflicto:
+        raise HTTPException(
+            status_code=400,
+            detail="Conflicto: el aula ya está ocupada en ese horario"
+        )
+
+    # 🔁 REASIGNAR
+    horario.aula_id = nueva_aula_id
+
+    db.commit()
+    db.refresh(horario)
+
+    return horario

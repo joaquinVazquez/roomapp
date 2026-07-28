@@ -1,0 +1,17 @@
+import requests
+from test_auth import login
+
+BASE_URL = "http://127.0.0.1:8000"
+
+# login docente
+headers = login("juan@test.com", "123456")
+
+print("\n--- MIS HORARIOS (DOCENTE) ---")
+
+response = requests.get(
+    f"{BASE_URL}/horarios/mis-horarios",
+    headers=headers
+)
+
+print(response.status_code)
+print(response.json())
