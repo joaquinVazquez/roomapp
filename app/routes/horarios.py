@@ -17,6 +17,8 @@ from app.services.horario_query_service import build_horario_query
 from app.models.actividad_academica import ActividadAcademica
 from app.services.horario_service import reasignar_aula
 from app.core.deps import require_permission
+from app.core.permissions import require_permiso
+from app.core.security import get_current_user
 
 
 
@@ -190,12 +192,12 @@ def horario_por_aula(
     return resultado
 
 @router.put("/{horario_id}/reasignar-aula")
-@router.put("/{horario_id}/reasignar-aula")
+@require_permiso("REASIGNAR_AULA")
 def cambiar_aula(
     horario_id: int,
     nueva_aula_id: int,
     db: Session = Depends(get_db),
-    usuario=Depends(require_permission("REASIGNAR_AULA"))
+    current_user: Usuario = Depends(get_current_user)
 ):
     horario = reasignar_aula(db, horario_id, nueva_aula_id)
 
