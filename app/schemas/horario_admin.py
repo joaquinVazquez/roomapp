@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class HorarioDetalle(BaseModel):
+class HorarioAdminDTO(BaseModel):
     id: int
     dia: str
     hora_inicio: str

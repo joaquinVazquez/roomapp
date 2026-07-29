@@ -14,9 +14,9 @@ from app.models.usuario import Usuario
 from app.models.rol import Rol
 
 
-# =========================
+# ==================================================
 # CONFIGURACIÓN JWT
-# =========================
+# ==================================================
 
 SECRET_KEY = "tu_clave_secreta_super_segura"
 
@@ -25,9 +25,10 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-# =========================
+
+# ==================================================
 # PASSWORD
-# =========================
+# ==================================================
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
@@ -35,49 +36,47 @@ pwd_context = CryptContext(
 )
 
 
-# =========================
-# SWAGGER / OAUTH2
-# =========================
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="login"
-)
-
-
-# =========================
-# HASH PASSWORD
-# =========================
-
-def hash_password(password: str) -> str:
-
-    # evita volver a cifrar un hash existente
-    if password.startswith("$2b$"):
-        return password
+def hash_password(password: str):
 
     return pwd_context.hash(password)
 
 
 
 def verify_password(
-    plain_password,
-    hashed_password
+    password_plano: str,
+    password_hash: str
 ):
 
     return pwd_context.verify(
-        plain_password,
-        hashed_password
+        password_plano,
+        password_hash
     )
 
 
-# =========================
-# CREAR TOKEN
-# =========================
 
-def create_access_token(data: dict):
+# ==================================================
+# OAUTH2 SWAGGER
+# ==================================================
 
-    to_encode = data.copy()
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/login"
+)
 
-    expire = (
+
+
+# ==================================================
+# CREAR TOKEN JWT
+# ==================================================
+
+def create_access_token(
+    data: dict
+):
+
+    datos = data.copy()
+
+
+    expiracion = (
         datetime.utcnow()
         +
         timedelta(
@@ -85,25 +84,35 @@ def create_access_token(data: dict):
         )
     )
 
-    to_encode.update({
-        "exp": expire
-    })
+
+    datos.update(
+        {
+            "exp": expiracion
+        }
+    )
 
 
-    return jwt.encode(
-        to_encode,
+    token = jwt.encode(
+        datos,
         SECRET_KEY,
         algorithm=ALGORITHM
     )
 
 
-# =========================
-# OBTENER USUARIO ACTUAL
-# =========================
+    return token
+
+
+
+# ==================================================
+# OBTENER USUARIO DESDE TOKEN
+# ==================================================
 
 def get_current_user(
+
     token: str = Depends(oauth2_scheme),
+
     db: Session = Depends(get_db)
+
 ):
 
     try:
@@ -136,7 +145,8 @@ def get_current_user(
         )
 
 
-    user = (
+
+    usuario = (
         db.query(Usuario)
         .filter(
             Usuario.id == user_id
@@ -145,7 +155,7 @@ def get_current_user(
     )
 
 
-    if user is None:
+    if usuario is None:
 
         raise HTTPException(
             status_code=401,
@@ -153,40 +163,40 @@ def get_current_user(
         )
 
 
-    return user
+    return usuario
 
 
 
-# =========================
-# VALIDAR ROLES
-# =========================
+# ==================================================
+# VALIDACIÓN POR ROLES
+# ==================================================
 
-def require_roles(*roles_permitidos):
+def require_roles(
+    *roles_permitidos
+):
 
 
-    def role_checker(
+    def validar_rol(
 
-        current_user: Usuario = Depends(get_current_user),
+        current_user: Usuario = Depends(
+            get_current_user
+        ),
 
         db: Session = Depends(get_db)
 
     ):
 
 
-        rol_usuario = (
-
+        rol = (
             db.query(Rol)
-
             .filter(
                 Rol.id == current_user.rol_id
             )
-
             .first()
-
         )
 
 
-        if not rol_usuario:
+        if rol is None:
 
             raise HTTPException(
                 status_code=403,
@@ -195,14 +205,17 @@ def require_roles(*roles_permitidos):
 
 
 
-        if rol_usuario.nombre not in roles_permitidos:
+        if rol.nombre not in roles_permitidos:
 
             raise HTTPException(
                 status_code=403,
-                detail="No tienes permisos para acceder a este recurso"
-
+                detail="No tienes permisos para este recurso"
             )
+
+
 
         return current_user
 
-    return role_checker
+
+
+    return validar_rol

@@ -1,33 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.horario import Horario
-from app.models.actividad_academica import ActividadAcademica
 from app.models.usuario import Usuario
-from app.schemas.horario import (
-    HorarioCreate,
-    HorarioUpdate,
-    HorarioResponse
-)
+
+from app.schemas.horario import HorarioCreate, HorarioResponse
 
 from app.services.horario_service import validar_conflictos
-from app.core.security import get_current_user
-from app.services.horario_query_service import build_horario_query
-from app.models.actividad_academica import ActividadAcademica
-from app.services.horario_service import reasignar_aula
-from app.core.deps import require_permission
-from app.core.permissions import require_permiso
-from app.core.security import get_current_user
-from app.services.notificacion_service import crear_notificacion
+from app.services.horario_estudiante_service import obtener_horarios_estudiante
+from app.services.horario_docente_service import obtener_horarios_docente
+
+from app.core.security import get_current_user, require_roles
+
+from app.schemas.horario_estudiante import HorarioEstudianteResponse
+from app.schemas.horario_docente import HorarioDocenteResponse
 
 
+router = APIRouter(prefix="/horarios", tags=["Horarios"])
 
-
-router = APIRouter(
-    prefix="/horarios",
-    tags=["Horarios"]
-)
 
 # =========================
 # CREAR HORARIO
@@ -35,12 +26,12 @@ router = APIRouter(
 @router.post("/", response_model=HorarioResponse)
 def crear_horario(
     horario: HorarioCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user=Depends(require_roles("ADMINISTRADOR", "COORDINADOR_ACADEMICO"))
 ):
     validar_conflictos(db, horario)
 
     nuevo = Horario(**horario.model_dump())
-
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
@@ -49,186 +40,28 @@ def crear_horario(
 
 
 # =========================
-# LISTAR
+# HORARIOS ESTUDIANTE
 # =========================
-@router.get("/", response_model=list[HorarioResponse])
-def listar_horarios(db: Session = Depends(get_db)):
-    return db.query(Horario).filter(Horario.activo == True).all()
-
-
-# =========================
-# MIS HORARIOS (DOCENTE - JWT)
-# =========================
-@router.get("/mis-horarios")
-def mis_horarios(
+@router.get(
+    "/mis-horarios-estudiante",
+    response_model=HorarioEstudianteResponse
+)
+def mis_horarios_estudiante(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-
-    horarios = (
-        db.query(Horario)
-        .join(Horario.actividad_academica)
-        .join(Horario.dia_semana)
-        .outerjoin(Horario.aula)
-        .filter(
-            ActividadAcademica.docente_id == current_user.id,
-            Horario.activo == True
-        )
-        .all()
-    )
-
-    resultado = []
-
-    for h in horarios:
-        resultado.append({
-            "id": h.id,
-            "dia": h.dia_semana.nombre,
-            "hora_inicio": str(h.hora_inicio),
-            "hora_fin": str(h.hora_fin),
-            "aula": h.aula.nombre if h.aula else None,
-            "materia": h.actividad_academica.materia.nombre,
-            "grupo": h.actividad_academica.grupo.nombre,
-            "docente": h.actividad_academica.docente.persona.nombre
-        })
-
-    return resultado
+    return obtener_horarios_estudiante(db, current_user.id)
 
 
 # =========================
-# POR DOCENTE (ADMIN)
+# HORARIOS DOCENTE
 # =========================
-@router.get("/docente/{docente_id}")
-def horario_por_docente(
-    docente_id: int,
-    db: Session = Depends(get_db)
+@router.get(
+    "/mis-horarios-docente",
+    response_model=HorarioDocenteResponse
+)
+def mis_horarios_docente(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
-
-    horarios = (
-        build_horario_query(db)
-        .filter(ActividadAcademica.docente_id == docente_id)
-        .order_by(Horario.dia_semana_id, Horario.hora_inicio)
-        .all()
-    )
-
-    resultado = []
-
-    for h in horarios:
-        resultado.append({
-            "id": h.id,
-            "dia": h.dia_semana.nombre,
-            "hora_inicio": str(h.hora_inicio),
-            "hora_fin": str(h.hora_fin),
-            "aula": h.aula.nombre if h.aula else None,
-            "materia": h.actividad_academica.materia.nombre,
-            "grupo": h.actividad_academica.grupo.nombre,
-            "docente": h.actividad_academica.docente.persona.nombre
-        })
-
-    return resultado
-
-
-# =========================
-# POR GRUPO
-# =========================
-@router.get("/grupo/{grupo_id}")
-def horario_por_grupo(
-    grupo_id: int,
-    db: Session = Depends(get_db)
-):
-
-    horarios = (
-        build_horario_query(db)
-        .filter(ActividadAcademica.grupo_id == grupo_id)
-        .order_by(Horario.dia_semana_id, Horario.hora_inicio)
-        .all()
-    )
-
-    resultado = []
-
-    for h in horarios:
-        resultado.append({
-            "id": h.id,
-            "dia": h.dia_semana.nombre,
-            "hora_inicio": str(h.hora_inicio),
-            "hora_fin": str(h.hora_fin),
-            "aula": h.aula.nombre if h.aula else None,
-            "materia": h.actividad_academica.materia.nombre,
-            "grupo": h.actividad_academica.grupo.nombre,
-            "docente": h.actividad_academica.docente.persona.nombre
-        })
-
-    return resultado
-
-
-# =========================
-# POR AULA
-# =========================
-@router.get("/aula/{aula_id}")
-def horario_por_aula(
-    aula_id: int,
-    db: Session = Depends(get_db)
-):
-
-    horarios = (
-        build_horario_query(db)
-        .filter(Horario.aula_id == aula_id)
-        .order_by(Horario.dia_semana_id, Horario.hora_inicio)
-        .all()
-    )
-
-    resultado = []
-
-    for h in horarios:
-        resultado.append({
-            "id": h.id,
-            "dia": h.dia_semana.nombre,
-            "hora_inicio": str(h.hora_inicio),
-            "hora_fin": str(h.hora_fin),
-            "aula": h.aula.nombre if h.aula else None,
-            "materia": h.actividad_academica.materia.nombre,
-            "grupo": h.actividad_academica.grupo.nombre,
-            "docente": h.actividad_academica.docente.persona.nombre
-        })
-
-    return resultado
-
-@router.put("/{horario_id}/reasignar-aula")
-def cambiar_aula(
-    horario_id: int,
-    nueva_aula_id: int,
-    db: Session = Depends(get_db)
-):
-
-    # 1. REASIGNAR
-    horario = reasignar_aula(db, horario_id, nueva_aula_id)
-
-    # ⚠️ VALIDACIÓN CRÍTICA
-    if not horario:
-        raise HTTPException(
-            status_code=500,
-            detail="Error al reasignar el aula"
-        )
-
-    # 2. OBTENER ACTIVIDAD
-    actividad = db.query(ActividadAcademica).filter(
-        ActividadAcademica.id == horario.actividad_academica_id
-    ).first()
-
-    # 3. NOTIFICACIÓN
-    if actividad:
-        print("🔥 PASO NOTIFICACION")
-        print(f"ACTIVIDAD: {actividad}")
-        print(f"📩 CREANDO NOTIFICACION PARA: {actividad.docente_id}")
-
-        crear_notificacion(
-            db=db,
-            usuario_id=actividad.docente_id,
-            mensaje=f"Se cambió el aula del horario {horario.id}"
-        )
-
-    # 4. RESPUESTA
-    return {
-        "message": "Aula reasignada correctamente",
-        "horario_id": horario.id,
-        "nueva_aula": nueva_aula_id
-    }
+    return obtener_horarios_docente(db, current_user.id)
