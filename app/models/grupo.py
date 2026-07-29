@@ -77,3 +77,14 @@ class Grupo(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+    actividades_academicas = relationship(
+    "ActividadAcademica",
+    back_populates="grupo"
+    )
+
+
+    inscripciones = relationship(
+        "Inscripcion",
+        back_populates="grupo"
+    )

@@ -66,3 +66,8 @@ class Usuario(Base):
     "ActividadAcademica",
     back_populates="docente"
     )
+
+    inscripciones = relationship(
+    "Inscripcion",
+    back_populates="usuario"
+    )

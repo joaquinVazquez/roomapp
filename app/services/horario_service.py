@@ -7,6 +7,7 @@ from app.models.aula import Aula
 from app.models.usuario import Usuario
 
 from app.services.notificacion_service import crear_notificacion
+from app.services.inscripcion_service import obtener_estudiantes_por_grupo
 
 
 # ==========================================
@@ -20,9 +21,11 @@ def validar_conflictos(db: Session, horario_data):
             detail="La hora de inicio debe ser menor a la hora de fin"
         )
 
+
     actividad = db.query(ActividadAcademica).filter(
         ActividadAcademica.id == horario_data.actividad_academica_id
     ).first()
+
 
     if not actividad:
         raise HTTPException(
@@ -31,6 +34,9 @@ def validar_conflictos(db: Session, horario_data):
         )
 
 
+    # =========================
+    # CONFLICTO AULA
+    # =========================
     if horario_data.aula_id is not None:
 
         conflicto_aula = db.query(Horario).filter(
@@ -41,6 +47,7 @@ def validar_conflictos(db: Session, horario_data):
             Horario.hora_fin > horario_data.hora_inicio
         ).first()
 
+
         if conflicto_aula:
             raise HTTPException(
                 status_code=400,
@@ -48,6 +55,9 @@ def validar_conflictos(db: Session, horario_data):
             )
 
 
+    # =========================
+    # CONFLICTO DOCENTE
+    # =========================
     conflicto_docente = db.query(Horario).join(
         ActividadAcademica
     ).filter(
@@ -66,6 +76,9 @@ def validar_conflictos(db: Session, horario_data):
         )
 
 
+    # =========================
+    # CONFLICTO GRUPO
+    # =========================
     conflicto_grupo = db.query(Horario).join(
         ActividadAcademica
     ).filter(
@@ -84,10 +97,14 @@ def validar_conflictos(db: Session, horario_data):
         )
 
 
+
 # ==========================================
 # OBTENER HORARIOS POR DOCENTE
 # ==========================================
-def obtener_horarios_por_docente(db: Session, docente_id: int):
+def obtener_horarios_por_docente(
+    db: Session,
+    docente_id: int
+):
 
     return (
         db.query(Horario)
@@ -101,6 +118,7 @@ def obtener_horarios_por_docente(db: Session, docente_id: int):
     )
 
 
+
 # ==========================================
 # REASIGNAR AULA
 # ==========================================
@@ -110,6 +128,9 @@ def reasignar_aula(
     nueva_aula_id: int
 ):
 
+    # =========================
+    # BUSCAR HORARIO
+    # =========================
     horario = db.query(Horario).filter(
         Horario.id == horario_id
     ).first()
@@ -122,6 +143,9 @@ def reasignar_aula(
         )
 
 
+    # =========================
+    # BUSCAR AULA
+    # =========================
     aula = db.query(Aula).filter(
         Aula.id == nueva_aula_id
     ).first()
@@ -134,6 +158,10 @@ def reasignar_aula(
         )
 
 
+
+    # =========================
+    # VALIDAR CONFLICTO AULA
+    # =========================
     conflicto = db.query(Horario).filter(
         Horario.aula_id == nueva_aula_id,
         Horario.dia_semana_id == horario.dia_semana_id,
@@ -151,22 +179,22 @@ def reasignar_aula(
         )
 
 
-    # Guardamos aula anterior para futuras mejoras
-    aula_anterior = horario.aula_id
 
-
-    # Actualizar aula
+    # =========================
+    # ACTUALIZAR AULA
+    # =========================
     horario.aula_id = nueva_aula_id
 
 
     db.commit()
+
     db.refresh(horario)
 
 
 
-    # ======================================
-    # CREAR NOTIFICACIONES
-    # ======================================
+    # =========================
+    # NOTIFICACIONES
+    # =========================
 
     actividad = horario.actividad_academica
 
@@ -174,21 +202,27 @@ def reasignar_aula(
     if actividad:
 
 
-        # --------------------------
-        # DOCENTE
-        # --------------------------
+        # -------------------------
+        # 1. DOCENTE
+        # -------------------------
+
         crear_notificacion(
             db=db,
             usuario_id=actividad.docente_id,
-            mensaje=f"Tu clase ha sido cambiada al aula {aula.nombre}",
+            mensaje=(
+                f"Tu clase ha sido cambiada "
+                f"al aula {aula.nombre}"
+            ),
             tipo_evento="CAMBIO_AULA",
             referencia_id=horario.id
         )
 
 
-        # --------------------------
-        # COORDINADORES
-        # --------------------------
+
+        # -------------------------
+        # 2. COORDINADORES
+        # -------------------------
+
         coordinadores = db.query(Usuario).filter(
             Usuario.rol_id == 2,
             Usuario.activo == True
@@ -200,10 +234,39 @@ def reasignar_aula(
             crear_notificacion(
                 db=db,
                 usuario_id=coord.id,
-                mensaje=f"Se reasignó el aula del horario {horario.id}",
+                mensaje=(
+                    f"Se reasignó el aula "
+                    f"del horario {horario.id}"
+                ),
                 tipo_evento="CAMBIO_AULA",
                 referencia_id=horario.id
             )
+
+
+
+        # -------------------------
+        # 3. ESTUDIANTES
+        # -------------------------
+
+        estudiantes = obtener_estudiantes_por_grupo(
+            db=db,
+            grupo_id=actividad.grupo_id
+        )
+
+
+        for estudiante in estudiantes:
+
+            crear_notificacion(
+                db=db,
+                usuario_id=estudiante.id,
+                mensaje=(
+                    f"Tu clase cambió "
+                    f"al aula {aula.nombre}"
+                ),
+                tipo_evento="CAMBIO_AULA",
+                referencia_id=horario.id
+            )
+
 
 
     return horario

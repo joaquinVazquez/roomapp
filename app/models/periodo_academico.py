@@ -60,4 +60,7 @@ class PeriodoAcademico(Base):
     back_populates="periodo_academico"
     )
 
-    
+    inscripciones = relationship(
+    "Inscripcion",
+    back_populates="periodo_academico"
+    )
