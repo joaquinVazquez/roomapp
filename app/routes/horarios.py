@@ -16,6 +16,9 @@ from app.core.security import get_current_user
 from app.services.horario_query_service import build_horario_query
 from app.models.actividad_academica import ActividadAcademica
 from app.services.horario_service import reasignar_aula
+from app.core.deps import require_permission
+
+
 
 
 router = APIRouter(
@@ -187,10 +190,12 @@ def horario_por_aula(
     return resultado
 
 @router.put("/{horario_id}/reasignar-aula")
+@router.put("/{horario_id}/reasignar-aula")
 def cambiar_aula(
     horario_id: int,
     nueva_aula_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario=Depends(require_permission("REASIGNAR_AULA"))
 ):
     horario = reasignar_aula(db, horario_id, nueva_aula_id)
 

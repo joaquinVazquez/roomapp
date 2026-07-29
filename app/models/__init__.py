@@ -13,3 +13,5 @@ from .actividad_academica import ActividadAcademica
 from .aula import Aula
 from .horario import Horario
 from .dia_semana import DiaSemana
+from .permiso import Permiso
+from .rol_permiso import RolPermiso
