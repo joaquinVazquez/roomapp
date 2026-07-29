@@ -3,6 +3,11 @@ from sqlalchemy.orm import Session
 from app.models.notificacion import Notificacion
 
 
+
+# =====================================
+# CREAR NOTIFICACION
+# =====================================
+
 def crear_notificacion(
     db: Session,
     usuario_id: int,
@@ -31,3 +36,80 @@ def crear_notificacion(
 
 
     return notificacion
+
+
+
+
+# =====================================
+# OBTENER NO LEIDAS
+# =====================================
+
+def obtener_no_leidas(
+    db: Session,
+    usuario_id: int
+):
+
+    return (
+        db.query(Notificacion)
+        .filter(
+            Notificacion.usuario_id == usuario_id,
+            Notificacion.leido == False
+        )
+        .order_by(
+            Notificacion.created_at.desc()
+        )
+        .all()
+    )
+
+
+
+
+# =====================================
+# MARCAR TODAS LEIDAS
+# =====================================
+
+def marcar_todas_leidas(
+    db: Session,
+    usuario_id: int
+):
+
+    notificaciones = (
+        db.query(Notificacion)
+        .filter(
+            Notificacion.usuario_id == usuario_id,
+            Notificacion.leido == False
+        )
+        .all()
+    )
+
+
+    for n in notificaciones:
+
+        n.leido = True
+
+
+    db.commit()
+
+
+    return len(notificaciones)
+
+
+
+
+# =====================================
+# CONTADOR
+# =====================================
+
+def contar_no_leidas(
+    db: Session,
+    usuario_id: int
+):
+
+    return (
+        db.query(Notificacion)
+        .filter(
+            Notificacion.usuario_id == usuario_id,
+            Notificacion.leido == False
+        )
+        .count()
+    )
