@@ -19,6 +19,7 @@ from app.services.horario_service import reasignar_aula
 from app.core.deps import require_permission
 from app.core.permissions import require_permiso
 from app.core.security import get_current_user
+from app.services.notificacion_service import crear_notificacion
 
 
 
@@ -192,17 +193,42 @@ def horario_por_aula(
     return resultado
 
 @router.put("/{horario_id}/reasignar-aula")
-@require_permiso("REASIGNAR_AULA")
 def cambiar_aula(
     horario_id: int,
     nueva_aula_id: int,
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
+
+    # 1. REASIGNAR
     horario = reasignar_aula(db, horario_id, nueva_aula_id)
 
+    # ⚠️ VALIDACIÓN CRÍTICA
+    if not horario:
+        raise HTTPException(
+            status_code=500,
+            detail="Error al reasignar el aula"
+        )
+
+    # 2. OBTENER ACTIVIDAD
+    actividad = db.query(ActividadAcademica).filter(
+        ActividadAcademica.id == horario.actividad_academica_id
+    ).first()
+
+    # 3. NOTIFICACIÓN
+    if actividad:
+        print("🔥 PASO NOTIFICACION")
+        print(f"ACTIVIDAD: {actividad}")
+        print(f"📩 CREANDO NOTIFICACION PARA: {actividad.docente_id}")
+
+        crear_notificacion(
+            db=db,
+            usuario_id=actividad.docente_id,
+            mensaje=f"Se cambió el aula del horario {horario.id}"
+        )
+
+    # 4. RESPUESTA
     return {
         "message": "Aula reasignada correctamente",
         "horario_id": horario.id,
-        "nueva_aula": horario.aula_id
+        "nueva_aula": nueva_aula_id
     }

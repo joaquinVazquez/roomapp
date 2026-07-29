@@ -15,3 +15,4 @@ from .horario import Horario
 from .dia_semana import DiaSemana
 from .permiso import Permiso
 from .rol_permiso import RolPermiso
+from .notificacion import Notificacion

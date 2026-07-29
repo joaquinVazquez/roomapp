@@ -12,6 +12,7 @@ from app.routes import horarios
 from app.routes import periodo_academico
 from app.routes import actividades_academicas
 from app.routes import grupo
+from app.routes import notificaciones
 
 app = FastAPI()
 
@@ -26,6 +27,7 @@ app.include_router(horarios.router)
 app.include_router(periodo_academico.router)
 app.include_router(actividades_academicas.router)
 app.include_router(grupo.router)
+app.include_router(notificaciones.router)
 
 
 @app.get("/")
