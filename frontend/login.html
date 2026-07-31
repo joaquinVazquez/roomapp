@@ -3,24 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos básicos -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
-    <h2>Iniciar sesión</h2>
+    <main style="max-width:400px;margin:auto;padding-top:80px;">
 
-    <form id="login-form">
-        <input type="email" id="email" placeholder="Correo" required>
-        <br><br>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <br><br>
-        <button type="submit">Entrar</button>
-    </form>
+        <h2>🔐 Iniciar sesión</h2>
 
-    <p id="error" style="color:red;"></p>
+        <form id="login-form">
+
+            <input 
+                type="email" 
+                id="email" 
+                placeholder="Correo" 
+                required
+                style="width:100%;padding:10px;margin-bottom:10px;"
+            >
+
+            <input 
+                type="password" 
+                id="password" 
+                placeholder="Contraseña" 
+                required
+                style="width:100%;padding:10px;margin-bottom:10px;"
+            >
+
+            <button 
+                type="submit"
+                style="width:100%;padding:10px;"
+            >
+                Entrar
+            </button>
+
+        </form>
+
+        <!-- Mensaje de error -->
+        <p id="error" style="color:red;margin-top:10px;"></p>
+
+        <!-- Loader -->
+        <p id="loading" style="display:none;">Validando...</p>
+
+    </main>
+
+    <!-- ========================= -->
+    <!-- SCRIPTS (ORDEN IMPORTANTE) -->
+    <!-- ========================= -->
 
     <script src="js/api.js"></script>
-    <script src="js/router.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/router.js"></script>
+
+    <!-- Script específico del login -->
+    <script>
+
+        const form = document.getElementById("login-form");
+        const errorMsg = document.getElementById("error");
+        const loading = document.getElementById("loading");
+
+        form.addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            errorMsg.textContent = "";
+            loading.style.display = "block";
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            try {
+
+                // 🔐 Login
+                await login(email, password);
+
+                // 🚀 Redirección por rol
+                await redirectByRole();
+
+            } catch (error) {
+
+                errorMsg.textContent = error.message;
+
+            } finally {
+
+                loading.style.display = "none";
+            }
+
+        });
+
+    </script>
+
 </body>
 </html>

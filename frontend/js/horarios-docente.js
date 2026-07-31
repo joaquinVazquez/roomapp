@@ -1,91 +1,39 @@
-document.addEventListener(
-"DOMContentLoaded",
-async()=>{
+document.addEventListener("DOMContentLoaded", async () => {
 
+    requireAuth();
 
-const container =
-document.getElementById(
-"horarios-container"
-);
+    const container = document.getElementById("horarios-container");
 
+    try {
 
-try{
+        const data = await getHorariosDocente();
 
+        const dias = data.dias || data.horarios || [];
 
-const data =
-await getHorariosDocente();
+        container.innerHTML = "";
 
+        dias.forEach(dia => {
 
-console.log(
-"RESPUESTA DOCENTE:",
-data
-);
+            let html = `<h2>${dia.dia}</h2>`;
 
+            dia.clases.forEach(c => {
 
+                html += `
+                <div class="card">
+                    <h3>${c.materia}</h3>
+                    <p>⏰ ${c.hora}</p>
+                    <p>🏫 ${c.aula}</p>
+                    <p>👥 ${c.grupo}</p>
+                </div>
+                `;
+            });
 
-const dias =
-data.horarios || data.dias || [];
+            container.innerHTML += html;
+        });
 
+    } catch (e) {
 
-
-container.innerHTML="";
-
-
-
-dias.forEach(dia=>{
-
-
-container.innerHTML+=
-`
-
-<h2>${dia.dia}</h2>
-
-
-${dia.clases.map(c=>`
-
-<div class="card">
-
-<h3>${c.materia}</h3>
-
-<p>
-⏰ ${c.hora}
-</p>
-
-<p>
-🏫 Aula: ${c.aula}
-</p>
-
-<p>
-👥 Grupo: ${c.grupo}
-</p>
-
-
-</div>
-
-
-`).join("")}
-
-
-`;
-
-});
-
-
-}
-catch(e){
-
-
-console.error(
-"ERROR COMPLETO:",
-e
-);
-
-
-container.innerHTML=
-"Error cargando horario";
-
-
-}
-
-
+        console.error(e);
+        container.innerHTML = "Error cargando horario";
+    }
 });

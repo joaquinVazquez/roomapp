@@ -1,161 +1,112 @@
 const API_URL = "http://127.0.0.1:8000";
 
 
-function getToken(){
+// ==========================
+// TOKEN
+// ==========================
 
+function getToken() {
     return localStorage.getItem("token");
-
 }
 
-
-function requireAuth(){
+function requireAuth() {
 
     const token = getToken();
 
-    if(!token){
-
-        window.location.href="../login.html";
+    if (!token) {
+        window.location.href = "/frontend/login.html";
         return null;
-
     }
 
     return token;
+}
 
+function authHeaders() {
+
+    const token = requireAuth();
+
+    return {
+        "Authorization": `Bearer ${token}`
+    };
 }
 
 
 // ==========================
-// USUARIO ACTUAL
+// USUARIO
 // ==========================
 
-async function getCurrentUser(){
+async function getCurrentUser() {
 
-    const token = requireAuth();
+    const response = await fetch(`${API_URL}/users/me`, {
+        headers: authHeaders()
+    });
 
-    const response = await fetch(
-        `${API_URL}/users/me`,
-        {
-            headers:{
-                "Authorization": `Bearer ${token}`
-            }
-        }
-    );
-
-
-    if(!response.ok){
-
+    if (!response.ok) {
         throw new Error("Error obteniendo usuario");
-
     }
 
-
     return await response.json();
-
 }
 
 
-
 // ==========================
-// HORARIO ESTUDIANTE
-// ==========================
-
-async function getHorariosEstudiante(){
-
-    const token = requireAuth();
-
-
-    const response = await fetch(
-        `${API_URL}/horarios/mis-horarios-estudiante`,
-        {
-            headers:{
-                "Authorization":`Bearer ${token}`
-            }
-        }
-    );
-
-
-    if(!response.ok){
-
-        throw new Error("Error horarios estudiante");
-
-    }
-
-
-    return await response.json();
-
-}
-
-
-
-// ==========================
-// HORARIO DOCENTE
+// HORARIOS
 // ==========================
 
-async function getHorariosDocente(){
-
-    const token = requireAuth();
-
+async function getHorariosDocente() {
 
     const response = await fetch(
         `${API_URL}/horarios/mis-horarios-docente`,
-        {
-            headers:{
-                "Authorization":`Bearer ${token}`
-            }
-        }
+        { headers: authHeaders() }
     );
 
-
-    if(!response.ok){
-
+    if (!response.ok) {
         throw new Error("Error horarios docente");
-
     }
 
-
     return await response.json();
-
 }
 
 
+async function getHorariosEstudiante() {
 
-// ==========================
-// HORARIO GENERAL
-// ==========================
+    const response = await fetch(
+        `${API_URL}/horarios/mis-horarios-estudiante`,
+        { headers: authHeaders() }
+    );
 
-async function getHorariosGenerales(){
+    if (!response.ok) {
+        throw new Error("Error horarios estudiante");
+    }
 
-    const token = requireAuth();
+    return await response.json();
+}
 
+
+async function getHorariosGenerales() {
 
     const response = await fetch(
         `${API_URL}/horarios/general`,
-        {
-            headers:{
-                "Authorization":`Bearer ${token}`
-            }
-        }
+        { headers: authHeaders() }
     );
 
+    if (!response.ok) {
+        throw new Error("Error horarios generales");
+    }
 
-    if(!response.ok){
-
-    const errorText = await response.text();
-
-    console.error(
-        "STATUS:",
-        response.status
-    );
-
-    console.error(
-        "ERROR API:",
-        errorText
-    );
-
-
-    throw new Error(
-        errorText
-    );
-
+    return await response.json();
 }
-}
+
+
+// ==========================
+// EXPORT GLOBAL (CONTROLADO)
+// ==========================
+
+window.API = {
+    getToken,
+    requireAuth,
+    getCurrentUser,
+    getHorariosDocente,
+    getHorariosEstudiante,
+    getHorariosGenerales
+};
