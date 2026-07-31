@@ -2,10 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 
-# =========================
-# DTO CLASE INDIVIDUAL
-# =========================
-class ClaseEstudianteDTO(BaseModel):
+class ClaseEstudiante(BaseModel):
     hora: str
     materia: str
     grupo: str
@@ -13,16 +10,10 @@ class ClaseEstudianteDTO(BaseModel):
     docente: str
 
 
-# =========================
-# DTO POR DÍA
-# =========================
-class DiaHorarioDTO(BaseModel):
+class DiaHorario(BaseModel):
     dia: str
-    clases: List[ClaseEstudianteDTO]
+    clases: List[ClaseEstudiante]
 
 
-# =========================
-# RESPONSE COMPLETO
-# =========================
 class HorarioEstudianteResponse(BaseModel):
-    horarios: List[DiaHorarioDTO]
+    dias: List[DiaHorario]

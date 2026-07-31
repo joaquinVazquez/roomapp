@@ -13,9 +13,28 @@ from app.routes import periodo_academico
 from app.routes import actividades_academicas
 from app.routes import grupo
 from app.routes import notificaciones
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# =========================
+# CORS CONFIG
+# =========================
+origins = [
+    "http://127.0.0.1:5500",  # Live Server VS Code
+    "http://localhost:5500",
+    "http://127.0.0.1:3000",  # si usas React después
+]
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # luego lo restringimos
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(users.router)

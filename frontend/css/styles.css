@@ -1,0 +1,77 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+}
+
+.header {
+    background-color: #1e3a8a;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+#app {
+    padding: 15px;
+}
+
+.dia {
+    margin-bottom: 20px;
+}
+
+.dia h2 {
+    margin-bottom: 10px;
+    color: #1e3a8a;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.hora {
+    font-weight: bold;
+    color: #111;
+}
+
+.materia {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.detalle {
+    font-size: 14px;
+    color: #555;
+}
+
+.sin-aula {
+    color: red;
+    font-weight: bold;
+}
+
+#loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.login-container {
+    max-width: 300px;
+    margin: 100px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.login-container input {
+    padding: 10px;
+}
+
+.login-container button {
+    padding: 10px;
+    background: #1e3a8a;
+    color: white;
+    border: none;
+}

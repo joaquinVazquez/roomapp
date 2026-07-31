@@ -1,22 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String
 from app.db.base_class import Base
-from typing import TYPE_CHECKING, List
-from sqlalchemy.orm import relationship
-
-if TYPE_CHECKING:
-    from app.models.rol_permiso import RolPermiso
 
 
 class Rol(Base):
+
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, index=True)
+
     nombre = Column(String, unique=True, nullable=False)
-    descripcion = Column(String, nullable=True)
-
-    activo = Column(Boolean, default=True)
-
-    permisos = relationship(
-    "RolPermiso",
-    back_populates="rol"
-)

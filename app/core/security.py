@@ -171,51 +171,25 @@ def get_current_user(
 # VALIDACIÓN POR ROLES
 # ==================================================
 
-def require_roles(
-    *roles_permitidos
-):
+def require_roles(*roles_permitidos):
 
-
-    def validar_rol(
-
-        current_user: Usuario = Depends(
-            get_current_user
-        ),
-
+    def role_checker(
+        current_user: Usuario = Depends(get_current_user),
         db: Session = Depends(get_db)
-
     ):
 
-
-        rol = (
+        rol_usuario = (
             db.query(Rol)
-            .filter(
-                Rol.id == current_user.rol_id
-            )
+            .filter(Rol.id == current_user.rol_id)
             .first()
         )
 
+        if not rol_usuario:
+            raise HTTPException(403, "Usuario sin rol")
 
-        if rol is None:
-
-            raise HTTPException(
-                status_code=403,
-                detail="Usuario sin rol asignado"
-            )
-
-
-
-        if rol.nombre not in roles_permitidos:
-
-            raise HTTPException(
-                status_code=403,
-                detail="No tienes permisos para este recurso"
-            )
-
-
+        if rol_usuario.nombre not in roles_permitidos:
+            raise HTTPException(403, "Sin permisos")
 
         return current_user
 
-
-
-    return validar_rol
+    return role_checker

@@ -53,21 +53,6 @@ class Grupo(Base):
         nullable=False
     )
 
-    programa = relationship(
-    "Programa",
-    back_populates="grupos"
-    )
-
-    periodo_academico = relationship(
-        "PeriodoAcademico",
-        back_populates="grupos"
-    )
-
-    actividades_academicas = relationship(
-    "ActividadAcademica",
-    back_populates="grupo"
-    )
-
     activo = Column(
         Boolean,
         default=True
@@ -76,6 +61,16 @@ class Grupo(Base):
     created_at = Column(
         DateTime,
         default=datetime.utcnow
+    )
+
+    programa = relationship(
+        "Programa",
+        back_populates="grupos"
+        )
+    
+    periodo_academico = relationship(
+        "PeriodoAcademico",
+        back_populates="grupos"
     )
 
     actividades_academicas = relationship(

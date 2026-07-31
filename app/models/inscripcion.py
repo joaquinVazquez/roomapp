@@ -12,6 +12,17 @@ from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
+from sqlalchemy import UniqueConstraint
+
+__table_args__ = (
+    UniqueConstraint(
+        "usuario_id",
+        "periodo_academico_id",
+        "activo",
+        name="uq_inscripcion_unica_activa"
+    ),
+)
+
 
 class Inscripcion(Base):
 
