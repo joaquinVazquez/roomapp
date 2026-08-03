@@ -15,6 +15,7 @@ from app.services.horario_docente_service import obtener_horarios_docente
 
 from app.core.security import get_current_user, require_roles
 from app.services.horario_general_service import obtener_horarios_generales
+from typing import Optional
 
 
 router = APIRouter(prefix="/horarios", tags=["Horarios"])
@@ -44,43 +45,51 @@ def crear_horario(
 # CONSULTA GENERAL
 # =========================
 @router.get("/general")
-def horarios_generales(
+def get_horarios_generales(
+    periodo_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
-    user=Depends(
-        require_roles(
-            "ADMINISTRADOR",
-            "COORDINADOR_ACADEMICO",
-            "PERSONAL_ADMINISTRATIVO"
-        )
-    )
+    user=Depends(require_roles(
+        "ADMINISTRADOR",
+        "COORDINADOR_ACADEMICO",
+        "PERSONAL_ADMINISTRATIVO"
+    ))
 ):
-
-    return obtener_horarios_generales(db)
+    return obtener_horarios_generales(
+        db,
+        periodo_id=periodo_id
+    )
 
 
 # =========================
 # MIS HORARIOS DOCENTE
 # =========================
 @router.get("/mis-horarios-docente")
-def mis_horarios_docente(
+def get_mis_horarios_docente(
+    periodo_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
     user=Depends(require_roles("DOCENTE"))
 ):
-    return obtener_horarios_docente(db, current_user.id)
+    return obtener_horarios_docente(
+        db,
+        docente_id=user.id,
+        periodo_id=periodo_id
+    )
 
 
 # =========================
 # MIS HORARIOS ESTUDIANTE
 # =========================
 @router.get("/mis-horarios-estudiante")
-def mis_horarios_estudiante(
+def get_mis_horarios_estudiante(
+    periodo_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
     user=Depends(require_roles("ESTUDIANTE"))
 ):
-    return obtener_horarios_estudiante(db, current_user.id)
+    return obtener_horarios_estudiante(
+        db,
+        usuario_id=user.id,
+        periodo_id=periodo_id
+    )
 
 
 # =========================

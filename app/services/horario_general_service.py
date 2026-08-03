@@ -8,7 +8,7 @@ from app.models.grupo import Grupo
 from app.services.periodo_service import get_periodo_activo
 
 
-def obtener_horarios_generales(db: Session):
+def obtener_horarios_generales(db: Session, periodo_id: int | None = None):
 
     # 🔹 Obtener periodo activo
     periodo = get_periodo_activo(db)

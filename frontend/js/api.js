@@ -23,7 +23,9 @@ function requireAuth() {
 
 function authHeaders() {
 
-    const token = requireAuth();
+    const token = getToken();
+
+    console.log("TOKEN ENVIADO:", token);
 
     return {
         "Authorization": `Bearer ${token}`

@@ -5,9 +5,17 @@ from fastapi import HTTPException
 from app.models.horario import Horario
 from app.models.actividad_academica import ActividadAcademica
 from app.models.inscripcion import Inscripcion
+from app.services.periodo_service import get_periodo_activo
+from app.models.periodo_academico import PeriodoAcademico
+from app.services.periodo_service import get_periodo_activo
 
 
-def obtener_horarios_estudiante(db: Session, usuario_id: int):
+def obtener_horarios_estudiante(db: Session, usuario_id: int, periodo_id: int | None = None):
+
+    periodo = get_periodo_activo(db)
+
+    if not periodo:
+        return {"dias": []}
 
     # =========================
     # VALIDAR INSCRIPCIÓN
@@ -16,6 +24,7 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int):
         db.query(Inscripcion)
         .filter(
             Inscripcion.usuario_id == usuario_id,
+            Inscripcion.periodo_academico_id == periodo.id,
             Inscripcion.activo == True
         )
         .all()
@@ -31,6 +40,21 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int):
         )
 
     grupo_id = inscripciones[0].grupo_id
+
+    # =========================
+    # PERIODO
+    # =========================
+    periodo = None
+
+    if periodo_id:
+        periodo = db.query(PeriodoAcademico).filter(
+            PeriodoAcademico.id == periodo_id
+        ).first()
+    else:
+        periodo = get_periodo_activo(db)
+
+    if not periodo:
+        return {"dias": []}
 
     # =========================
     # CONSULTAR HORARIOS
@@ -71,3 +95,4 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int):
         })
 
     return {"dias": dias}
+
