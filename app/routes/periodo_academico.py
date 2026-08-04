@@ -28,7 +28,10 @@ def get_periodos_academicos(
     user=Depends(
         require_roles(
             "ADMINISTRADOR",
-            "COORDINADOR_ACADEMICO"
+            "COORDINADOR_ACADEMICO",
+            "DOCENTE",
+            "ESTUDIANTE",
+            "PERSONAL_ADMINISTRATIVO"
         )
     ),
 ):
@@ -91,7 +94,10 @@ def get_periodo_academico(
     user=Depends(
         require_roles(
             "ADMINISTRADOR",
-            "COORDINADOR_ACADEMICO"
+            "COORDINADOR_ACADEMICO",
+            "DOCENTE",
+            "ESTUDIANTE",
+            "PERSONAL_ADMINISTRATIVO"
         )
     ),
 ):

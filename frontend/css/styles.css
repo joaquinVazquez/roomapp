@@ -1,19 +1,91 @@
+/* =========================
+   BASE
+========================= */
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #f5f7fa;
 }
 
+/* =========================
+   HEADER
+========================= */
+
 .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: #1e3a8a;
     color: white;
-    padding: 15px;
-    text-align: center;
+    padding: 10px 20px;
 }
 
-#app {
-    padding: 15px;
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
+
+.header button {
+    background: #ef4444;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.layout {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: 220px;
+    background: #0f172a;
+    color: white;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar button {
+    background: none;
+    border: none;
+    color: white;
+    text-align: left;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.sidebar button:hover {
+    background: #1e293b;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* =========================
+   HORARIOS
+========================= */
 
 .dia {
     margin-bottom: 20px;
@@ -24,17 +96,21 @@ body {
     color: #1e3a8a;
 }
 
+/* =========================
+   CARDS
+========================= */
+
 .card {
     background: white;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
 .hora {
     font-weight: bold;
-    color: #111;
+    color: #1e3a8a;
 }
 
 .materia {
@@ -52,12 +128,25 @@ body {
     font-weight: bold;
 }
 
+.menu-btn.activo {
+    background: #1e293b;
+    border-left: 4px solid #3b82f6;
+}
+
+/* =========================
+   LOADING
+========================= */
+
 #loading {
     text-align: center;
     padding: 20px;
     font-weight: bold;
     color: #1e3a8a;
 }
+
+/* =========================
+   LOGIN
+========================= */
 
 .login-container {
     max-width: 300px;
@@ -76,4 +165,24 @@ body {
     background: #1e3a8a;
     color: white;
     border: none;
+}
+
+/* =========================
+   SPINNER
+========================= */
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #1e3a8a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

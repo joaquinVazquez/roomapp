@@ -21,15 +21,37 @@ function requireAuth() {
     return token;
 }
 
-function authHeaders() {
+
+// ==========================
+// CORE REQUEST (🔥 CLAVE)
+// ==========================
+
+async function apiRequest(endpoint) {
 
     const token = getToken();
 
-    console.log("TOKEN ENVIADO:", token);
+    const response = await fetch(`${API_URL}${endpoint}`, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
 
-    return {
-        "Authorization": `Bearer ${token}`
-    };
+    // 🔥 manejo centralizado
+    if (response.status === 401) {
+
+        console.warn("Sesión expirada");
+
+        localStorage.removeItem("token");
+        window.location.href = "/frontend/login.html";
+
+        throw new Error("401 Unauthorized");
+    }
+
+    if (!response.ok) {
+        throw new Error(`Error API: ${endpoint}`);
+    }
+
+    return await response.json();
 }
 
 
@@ -38,16 +60,7 @@ function authHeaders() {
 // ==========================
 
 async function getCurrentUser() {
-
-    const response = await fetch(`${API_URL}/users/me`, {
-        headers: authHeaders()
-    });
-
-    if (!response.ok) {
-        throw new Error("Error obteniendo usuario");
-    }
-
-    return await response.json();
+    return await apiRequest("/users/me");
 }
 
 
@@ -57,51 +70,69 @@ async function getCurrentUser() {
 
 async function getHorariosDocente() {
 
-    const response = await fetch(
-        `${API_URL}/horarios/mis-horarios-docente`,
-        { headers: authHeaders() }
-    );
+    let periodoId = localStorage.getItem("periodo_id");
 
-    if (!response.ok) {
-        throw new Error("Error horarios docente");
+    // 🔥 fallback de seguridad
+    if (!periodoId) {
+
+        console.warn("No hay periodo_id, obteniendo por defecto...");
+
+        const periodos = await getPeriodos();
+
+        if (!periodos || periodos.length === 0) {
+            throw new Error("No hay periodos disponibles");
+        }
+
+        periodoId = periodos[0].id;
+        localStorage.setItem("periodo_id", periodoId);
     }
 
-    return await response.json();
+    return await apiRequest(
+        `/horarios/mis-horarios-docente?periodo_id=${periodoId}`
+    );
 }
 
 
 async function getHorariosEstudiante() {
 
-    const response = await fetch(
-        `${API_URL}/horarios/mis-horarios-estudiante`,
-        { headers: authHeaders() }
-    );
+    let periodoId = localStorage.getItem("periodo_id");
 
-    if (!response.ok) {
-        throw new Error("Error horarios estudiante");
+    if (!periodoId) {
+
+        const periodos = await getPeriodos();
+
+        if (!periodos || periodos.length === 0) {
+            throw new Error("No hay periodos disponibles");
+        }
+
+        periodoId = periodos[0].id;
+        localStorage.setItem("periodo_id", periodoId);
     }
 
-    return await response.json();
+    return await apiRequest(
+        `/horarios/mis-horarios-estudiante?periodo_id=${periodoId}`
+    );
 }
 
 
 async function getHorariosGenerales() {
 
-    const response = await fetch(
-        `${API_URL}/horarios/general`,
-        { headers: authHeaders() }
-    );
-
-    if (!response.ok) {
-        throw new Error("Error horarios generales");
-    }
-
-    return await response.json();
+    return await apiRequest("/horarios/general");
 }
 
 
 // ==========================
-// EXPORT GLOBAL (CONTROLADO)
+// PERIODOS
+// ==========================
+
+async function getPeriodos() {
+
+    return await apiRequest("/periodos-academicos");
+}
+
+
+// ==========================
+// EXPORT GLOBAL
 // ==========================
 
 window.API = {
@@ -110,5 +141,6 @@ window.API = {
     getCurrentUser,
     getHorariosDocente,
     getHorariosEstudiante,
-    getHorariosGenerales
+    getHorariosGenerales,
+    getPeriodos
 };

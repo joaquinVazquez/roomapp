@@ -19,52 +19,42 @@
 
 </head>
 
-
 <body>
 
-
 <header class="header">
-
-    <h1>
-        📅 RoomApp
-    </h1>
-
-
-    <div id="usuario-info">
-        Cargando usuario...
+    <div class="header-left">
+        <h1>📅 RoomApp</h1>
     </div>
 
+    <div class="header-right">
+        <div id="usuario-info"></div>
+        <button onclick="logout()">Cerrar sesión</button>
+    </div>
 
+    <div class="header-right">
+
+        <select id="selector-periodo"></select>
+
+    <button onclick="logout()">Salir</button>
+
+    </div>
 </header>
 
+<div class="layout">
 
+    <aside id="menu" class="sidebar"></aside>
 
-<nav id="menu">
+    <main id="contenido" class="main">
+        <h2>Bienvenido</h2>
+        <p>Selecciona una opción</p>
+    </main>
 
-</nav>
-
-
-
-<main id="contenido">
-
-    <h2>
-        Bienvenido
-    </h2>
-
-    <p>
-        Seleccione una opción
-    </p>
-
-</main>
-
-
-
+</div>
 
 <script src="js/api.js"></script>
 <script src="js/router.js"></script>
 <script src="js/horarios.js"></script>
 <script src="js/app.js"></script>
-
 
 </body>
 

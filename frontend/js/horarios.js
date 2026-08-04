@@ -1,129 +1,294 @@
+// ===============================
+// HORARIOS
+// ===============================
+
+
 async function cargarMiHorario(){
 
+    try {
 
-    const usuario =
-    await getCurrentUser();
-
-
-
-    let data;
+        const usuario = await getCurrentUser();
 
 
+        if(usuario.rol === "ESTUDIANTE"){
 
-    if(usuario.rol==="ESTUDIANTE"){
+            return await getHorariosEstudiante();
 
-
-        data =
-        await getHorariosEstudiante();
-
-
-    }
+        }
 
 
-    if(usuario.rol==="DOCENTE"){
+        if(usuario.rol === "DOCENTE"){
+
+            return await getHorariosDocente();
+
+        }
 
 
-        data =
-        await getHorariosDocente();
+        return {
+            dias:[]
+        };
 
 
     }
+    catch(error){
 
+        console.error(
+            "Error cargando horario:",
+            error
+        );
 
+        mostrarError(
+            "No fue posible cargar el horario"
+        );
 
-    mostrarHorarios(data);
+        return {
+            dias:[]
+        };
+
+    }
 
 }
 
 
 
-
+// ===============================
+// HORARIO GENERAL
+// ===============================
 
 async function cargarHorarioGeneral(){
 
+    try{
 
-    const data =
-    await getHorariosGenerales();
+        const data =
+            await getHorariosGenerales();
 
 
+        mostrarHorarios(data);
 
-    mostrarHorarios(data);
 
+    }
+    catch(error){
+
+        console.error(error);
+
+        mostrarError(
+            "Error cargando horario general"
+        );
+
+    }
 
 }
 
+
+
+// ===============================
+// RENDER HORARIOS
+// ===============================
+
 function mostrarHorarios(data){
 
-    const contenedor = document.getElementById("contenido");
 
-    contenedor.innerHTML = "";
+    const contenedor =
+        document.getElementById(
+            "contenido"
+        );
 
-    const dias = data.dias ?? data.horarios ?? [];
 
-    // =========================
-    // ESTADO VACÍO
-    // =========================
-
-    if(dias.length === 0){
-
-        contenedor.innerHTML = `
-            <p>No hay horarios disponibles</p>
-        `;
+    if(!contenedor){
         return;
     }
 
 
-    // =========================
-    // RENDER
-    // =========================
+    if(!data){
 
-    dias.forEach(dia => {
+        mostrarError(
+            "No se recibieron datos"
+        );
 
-        const bloque = document.createElement("div");
-        bloque.className = "dia";
+        return;
 
-        let clasesHTML = dia.clases.map(clase => `
+    }
+
+
+    const dias =
+        data.dias ??
+        data.horarios ??
+        [];
+
+
+
+    if(dias.length === 0){
+
+        contenedor.innerHTML = `
+
+            <div style="
+                text-align:center;
+                padding:40px;
+            ">
+
+                <h3>
+                📭 Sin horarios
+                </h3>
+
+                <p>
+                No hay información disponible
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    contenedor.innerHTML = "";
+
+
+
+    dias.forEach(dia=>{
+
+
+        const bloque =
+            document.createElement(
+                "div"
+            );
+
+
+        bloque.className =
+            "dia";
+
+
+
+        let html = `
+
+            <h2>
+                ${dia.dia}
+            </h2>
+
+        `;
+
+
+
+        dia.clases.forEach(clase=>{
+
+
+            html += `
 
             <div class="card">
 
+
                 <div class="hora">
-                    ${clase.hora}
+                    ⏰ ${clase.hora}
                 </div>
+
 
                 <div class="materia">
                     ${clase.materia}
                 </div>
 
-                <div class="detalle">
-                    Grupo: ${clase.grupo}
-                </div>
 
                 <div class="detalle">
-                    Aula: 
-                    ${
-                        clase.aula === "SIN ASIGNAR"
-                        ? `<span class="sin-aula">${clase.aula}</span>`
-                        : clase.aula
-                    }
+                    👥 Grupo:
+                    ${clase.grupo}
                 </div>
+
+
+                <div class="detalle">
+                    🏫 Aula:
+
+                    ${
+                    clase.aula === "SIN ASIGNAR"
+                    ?
+                    `<span class="sin-aula">
+                    SIN ASIGNAR
+                    </span>`
+                    :
+                    clase.aula
+                    }
+
+                </div>
+
 
                 ${
-                    clase.docente
-                    ? `<div class="detalle">Docente: ${clase.docente}</div>`
-                    : ""
+                clase.docente
+                ?
+                `
+                <div class="detalle">
+                    👨‍🏫
+                    ${clase.docente}
+                </div>
+                `
+                :
+                ""
                 }
+
 
             </div>
 
-        `).join("");
+            `;
 
-        bloque.innerHTML = `
-            <h2>${dia.dia}</h2>
-            ${clasesHTML}
-        `;
 
-        contenedor.appendChild(bloque);
+        });
+
+
+
+        bloque.innerHTML = html;
+
+
+        contenedor.appendChild(
+            bloque
+        );
+
 
     });
+
+
+}
+
+
+
+// ===============================
+// ERROR
+// ===============================
+
+function mostrarError(
+    mensaje="Ocurrió un error"
+){
+
+
+    const contenedor =
+        document.getElementById(
+            "contenido"
+        );
+
+
+    if(!contenedor){
+        return;
+    }
+
+
+
+    contenedor.innerHTML = `
+
+        <div style="
+            text-align:center;
+            padding:40px;
+            color:red;
+        ">
+
+            <h3>
+            ⚠️ Error
+            </h3>
+
+            <p>
+            ${mensaje}
+            </p>
+
+        </div>
+
+    `;
 
 }

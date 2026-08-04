@@ -85,54 +85,61 @@ function crearMenuPorRol(rol) {
     // ======================
 
     menu.innerHTML = opciones.map(op => `
-        <button onclick="cargarModulo('${op.accion}')">
-            ${op.nombre}
-        </button>
+
+    <button 
+        class="menu-btn"
+        onclick="activarMenu(this, '${op.accion}')"
+    >
+        ${op.nombre}
+    </button>
+
     `).join("");
 
 }
 
+function activarMenu(boton, accion){
+
+    document.querySelectorAll(".menu-btn")
+        .forEach(btn => btn.classList.remove("activo"));
+
+    boton.classList.add("activo");
+
+    cargarModulo(accion);
+
+}
 
 
 // ===============================
 // CARGA DE MÓDULOS (SPA)
 // ===============================
 
-async function cargarModulo(opcion) {
+async function cargarModulo(opcion){
 
-    try {
+    try{
 
-        const contenedor = document.getElementById("contenido");
+        mostrarLoading(); // 👈 AQUI VA
 
-        if (!contenedor) return;
-
-        // Loader simple
-        contenedor.innerHTML = "<p id='loading'>Cargando...</p>";
-
-
-        switch (opcion) {
+        switch(opcion){
 
             case "horario":
                 await cargarMiHorario();
-                break;
-
+            break;
 
             case "general":
                 await cargarHorarioGeneral();
-                break;
-
+            break;
 
             default:
-                contenedor.innerHTML = "<h2>Módulo en construcción</h2>";
-
+                document.getElementById("contenido").innerHTML =
+                "<h2>Módulo en construcción</h2>";
         }
 
-    } catch (error) {
+    }
+    catch(error){
 
         console.error("Error cargando módulo:", error);
 
-        document.getElementById("contenido").innerHTML =
-            "<p style='color:red;'>Error cargando módulo</p>";
+        mostrarError("No se pudo cargar la información"); // 👈 AQUI VA
 
     }
 
