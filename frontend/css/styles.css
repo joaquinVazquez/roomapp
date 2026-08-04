@@ -55,6 +55,8 @@ body {
 #loading {
     text-align: center;
     padding: 20px;
+    font-weight: bold;
+    color: #1e3a8a;
 }
 
 .login-container {

@@ -43,7 +43,7 @@ async function cargarHorarioGeneral(){
 
 
     const data =
-    await getHorarioGeneral();
+    await getHorariosGenerales();
 
 
 
@@ -52,93 +52,78 @@ async function cargarHorarioGeneral(){
 
 }
 
-
-
-
-
 function mostrarHorarios(data){
 
+    const contenedor = document.getElementById("contenido");
 
-    const contenedor =
-    document.getElementById(
-        "contenido"
-    );
+    contenedor.innerHTML = "";
 
+    const dias = data.dias ?? data.horarios ?? [];
 
+    // =========================
+    // ESTADO VACÍO
+    // =========================
 
-    contenedor.innerHTML="";
+    if(dias.length === 0){
 
-
-
-    const dias =
-    data.dias ??
-    data.horarios;
-
-
-
-    dias.forEach(dia=>{
+        contenedor.innerHTML = `
+            <p>No hay horarios disponibles</p>
+        `;
+        return;
+    }
 
 
-        contenedor.innerHTML += `
+    // =========================
+    // RENDER
+    // =========================
 
+    dias.forEach(dia => {
 
-        <h2>
-        ${dia.dia}
-        </h2>
+        const bloque = document.createElement("div");
+        bloque.className = "dia";
 
+        let clasesHTML = dia.clases.map(clase => `
 
-        ${
-        dia.clases.map(clase=>`
+            <div class="card">
 
+                <div class="hora">
+                    ${clase.hora}
+                </div>
 
-        <div class="card">
+                <div class="materia">
+                    ${clase.materia}
+                </div>
 
+                <div class="detalle">
+                    Grupo: ${clase.grupo}
+                </div>
 
-            <strong>
-            ${clase.hora}
-            </strong>
+                <div class="detalle">
+                    Aula: 
+                    ${
+                        clase.aula === "SIN ASIGNAR"
+                        ? `<span class="sin-aula">${clase.aula}</span>`
+                        : clase.aula
+                    }
+                </div>
 
+                ${
+                    clase.docente
+                    ? `<div class="detalle">Docente: ${clase.docente}</div>`
+                    : ""
+                }
 
-            <p>
-            ${clase.materia}
-            </p>
+            </div>
 
+        `).join("");
 
-            <p>
-            Grupo:
-            ${clase.grupo}
-            </p>
-
-
-            <p>
-            Aula:
-            ${clase.aula}
-            </p>
-
-
-            ${
-            clase.docente
-            ?
-            `<p>
-            Docente:
-            ${clase.docente}
-            </p>`
-            :
-            ""
-            }
-
-
-        </div>
-
-
-        `).join("")
-        }
-
-
+        bloque.innerHTML = `
+            <h2>${dia.dia}</h2>
+            ${clasesHTML}
         `;
 
+        contenedor.appendChild(bloque);
 
     });
-
 
 }
