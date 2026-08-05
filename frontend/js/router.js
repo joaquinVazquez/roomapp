@@ -8,7 +8,6 @@ async function redirectByRole() {
 
         const user = await getCurrentUser();
 
-        // Todos los roles entran a la SPA
         switch (user.rol) {
 
             case "ADMINISTRADOR":
@@ -27,7 +26,7 @@ async function redirectByRole() {
     } catch (error) {
 
         console.error("Error en redirectByRole:", error);
-        alert("Error identificando usuario");
+        alert("No fue posible iniciar sesión.");
 
     }
 
@@ -36,7 +35,7 @@ async function redirectByRole() {
 
 
 // ===============================
-// MENÚ DINÁMICO POR ROL
+// MENÚ POR ROL
 // ===============================
 
 function crearMenuPorRol(rol) {
@@ -48,11 +47,15 @@ function crearMenuPorRol(rol) {
     let opciones = [];
 
 
-    // ======================
-    // ROLES
-    // ======================
 
-    if (rol === "DOCENTE" || rol === "ESTUDIANTE") {
+    // ----------------------------
+    // DOCENTE / ESTUDIANTE
+    // ----------------------------
+
+    if (
+        rol === "DOCENTE" ||
+        rol === "ESTUDIANTE"
+    ) {
 
         opciones = [
             {
@@ -63,6 +66,11 @@ function crearMenuPorRol(rol) {
 
     }
 
+
+
+    // ----------------------------
+    // ADMINISTRATIVOS
+    // ----------------------------
 
     if (
         rol === "ADMINISTRADOR" ||
@@ -80,26 +88,42 @@ function crearMenuPorRol(rol) {
     }
 
 
-    // ======================
-    // RENDER DEL MENÚ
-    // ======================
+
+    // ----------------------------
+    // RENDER
+    // ----------------------------
 
     menu.innerHTML = opciones.map(op => `
 
-    <button 
-        class="menu-btn"
-        onclick="activarMenu(this, '${op.accion}')"
-    >
-        ${op.nombre}
-    </button>
+        <button
+            class="menu-btn"
+            data-accion="${op.accion}"
+            onclick="activarMenu(this,'${op.accion}')"
+        >
+
+            ${op.nombre}
+
+        </button>
 
     `).join("");
 
+
+
+    // Activar automáticamente
+    activarPrimerBoton();
+
 }
 
-function activarMenu(boton, accion){
 
-    document.querySelectorAll(".menu-btn")
+
+// ===============================
+// ACTIVAR BOTÓN DEL MENÚ
+// ===============================
+
+function activarMenu(boton, accion) {
+
+    document
+        .querySelectorAll(".menu-btn")
         .forEach(btn => btn.classList.remove("activo"));
 
     boton.classList.add("activo");
@@ -109,37 +133,66 @@ function activarMenu(boton, accion){
 }
 
 
+
 // ===============================
-// CARGA DE MÓDULOS (SPA)
+// ACTIVAR EL PRIMER BOTÓN
 // ===============================
 
-async function cargarModulo(opcion){
+function activarPrimerBoton() {
 
-    try{
+    const primerBoton =
+        document.querySelector(".menu-btn");
 
-        mostrarLoading(); // 👈 AQUI VA
+    if (!primerBoton) return;
 
-        switch(opcion){
+    activarMenu(
+        primerBoton,
+        primerBoton.dataset.accion
+    );
+
+}
+
+
+
+// ===============================
+// CARGA DE MÓDULOS
+// ===============================
+
+async function cargarModulo(opcion) {
+
+    try {
+
+        mostrarLoading();
+
+        switch (opcion) {
 
             case "horario":
-                await cargarMiHorario();
-            break;
+
+                const horario = await cargarMiHorario();
+                mostrarHorarios(horario);
+                break;
 
             case "general":
-                await cargarHorarioGeneral();
-            break;
+
+                const general = await getHorariosGenerales();
+                mostrarHorarios(general);
+                break;
 
             default:
-                document.getElementById("contenido").innerHTML =
-                "<h2>Módulo en construcción</h2>";
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>Módulo en construcción</h2>
+                `;
+
         }
 
-    }
-    catch(error){
+    } catch (error) {
 
         console.error("Error cargando módulo:", error);
 
-        mostrarError("No se pudo cargar la información"); // 👈 AQUI VA
+        mostrarError(
+            "No fue posible cargar la información."
+        );
 
     }
 

@@ -2,48 +2,28 @@
 // HORARIOS
 // ===============================
 
-
-async function cargarMiHorario(){
+async function cargarMiHorario() {
 
     try {
 
         const usuario = await getCurrentUser();
 
-
-        if(usuario.rol === "ESTUDIANTE"){
-
-            return await getHorariosEstudiante();
-
-        }
-
-
-        if(usuario.rol === "DOCENTE"){
-
+        if (usuario.rol === "DOCENTE") {
             return await getHorariosDocente();
-
         }
 
+        if (usuario.rol === "ESTUDIANTE") {
+            return await getHorariosEstudiante();
+        }
 
-        return {
-            dias:[]
-        };
-
+        return { dias: [] };
 
     }
-    catch(error){
+    catch (error) {
 
-        console.error(
-            "Error cargando horario:",
-            error
-        );
+        console.error("Error cargando horario:", error);
 
-        mostrarError(
-            "No fue posible cargar el horario"
-        );
-
-        return {
-            dias:[]
-        };
+        return { dias: [] };
 
     }
 
@@ -55,25 +35,18 @@ async function cargarMiHorario(){
 // HORARIO GENERAL
 // ===============================
 
-async function cargarHorarioGeneral(){
+async function cargarHorarioGeneral() {
 
-    try{
+    try {
 
-        const data =
-            await getHorariosGenerales();
-
-
-        mostrarHorarios(data);
-
+        return await getHorariosGenerales();
 
     }
-    catch(error){
+    catch (error) {
 
-        console.error(error);
+        console.error("Error cargando horario general:", error);
 
-        mostrarError(
-            "Error cargando horario general"
-        );
+        return { dias: [] };
 
     }
 
@@ -82,57 +55,34 @@ async function cargarHorarioGeneral(){
 
 
 // ===============================
-// RENDER HORARIOS
+// RENDER
 // ===============================
 
-function mostrarHorarios(data){
-
+function mostrarHorarios(data) {
 
     const contenedor =
-        document.getElementById(
-            "contenido"
-        );
+        document.getElementById("contenido");
 
+    if (!contenedor) return;
 
-    if(!contenedor){
-        return;
-    }
-
-
-    if(!data){
-
-        mostrarError(
-            "No se recibieron datos"
-        );
-
-        return;
-
-    }
 
 
     const dias =
-        data.dias ??
-        data.horarios ??
+        data?.dias ??
+        data?.horarios ??
         [];
 
 
 
-    if(dias.length === 0){
+    if (dias.length === 0) {
 
         contenedor.innerHTML = `
 
-            <div style="
-                text-align:center;
-                padding:40px;
-            ">
+            <div style="text-align:center;padding:40px;">
 
-                <h3>
-                📭 Sin horarios
-                </h3>
+                <h3>📭 Sin horarios</h3>
 
-                <p>
-                No hay información disponible
-                </p>
+                <p>No hay información disponible.</p>
 
             </div>
 
@@ -148,103 +98,100 @@ function mostrarHorarios(data){
 
 
 
-    dias.forEach(dia=>{
-
+    dias.forEach(dia => {
 
         const bloque =
-            document.createElement(
-                "div"
-            );
+            document.createElement("section");
 
-
-        bloque.className =
-            "dia";
+        bloque.className = "dia";
 
 
 
-        let html = `
+        bloque.innerHTML = `
 
-            <h2>
-                ${dia.dia}
-            </h2>
+            <h2>${dia.dia}</h2>
+
+            ${dia.clases
+                .map(crearCardHorario)
+                .join("")}
 
         `;
 
 
 
-        dia.clases.forEach(clase=>{
-
-
-            html += `
-
-            <div class="card">
-
-
-                <div class="hora">
-                    ⏰ ${clase.hora}
-                </div>
-
-
-                <div class="materia">
-                    ${clase.materia}
-                </div>
-
-
-                <div class="detalle">
-                    👥 Grupo:
-                    ${clase.grupo}
-                </div>
-
-
-                <div class="detalle">
-                    🏫 Aula:
-
-                    ${
-                    clase.aula === "SIN ASIGNAR"
-                    ?
-                    `<span class="sin-aula">
-                    SIN ASIGNAR
-                    </span>`
-                    :
-                    clase.aula
-                    }
-
-                </div>
-
-
-                ${
-                clase.docente
-                ?
-                `
-                <div class="detalle">
-                    👨‍🏫
-                    ${clase.docente}
-                </div>
-                `
-                :
-                ""
-                }
-
-
-            </div>
-
-            `;
-
-
-        });
-
-
-
-        bloque.innerHTML = html;
-
-
-        contenedor.appendChild(
-            bloque
-        );
-
+        contenedor.appendChild(bloque);
 
     });
 
+}
+
+
+
+// ===============================
+// CARD
+// ===============================
+
+function crearCardHorario(clase) {
+
+    return `
+
+        <div class="card">
+
+            <div class="hora">
+
+                ⏰ ${clase.hora}
+
+            </div>
+
+            <div class="materia">
+
+                ${clase.materia}
+
+            </div>
+
+            <div class="detalle">
+
+                👥 Grupo:
+                ${clase.grupo}
+
+            </div>
+
+            <div class="detalle">
+
+                🏫 Aula:
+
+                ${
+                    clase.aula === "SIN ASIGNAR"
+
+                    ? `<span class="sin-aula">
+                        SIN ASIGNAR
+                      </span>`
+
+                    : clase.aula
+                }
+
+            </div>
+
+            ${
+                clase.docente
+
+                ? `
+
+                <div class="detalle">
+
+                    👨‍🏫 ${clase.docente}
+
+                </div>
+
+                `
+
+                : ""
+
+            }
+
+        </div>
+
+    `;
 
 }
 
@@ -255,37 +202,29 @@ function mostrarHorarios(data){
 // ===============================
 
 function mostrarError(
-    mensaje="Ocurrió un error"
-){
-
+    mensaje = "Ocurrió un error"
+) {
 
     const contenedor =
-        document.getElementById(
-            "contenido"
-        );
+        document.getElementById("contenido");
 
-
-    if(!contenedor){
-        return;
-    }
+    if (!contenedor) return;
 
 
 
     contenedor.innerHTML = `
 
-        <div style="
-            text-align:center;
-            padding:40px;
-            color:red;
-        ">
+        <div
+            style="
+                text-align:center;
+                padding:40px;
+                color:red;
+            "
+        >
 
-            <h3>
-            ⚠️ Error
-            </h3>
+            <h3>⚠️ Error</h3>
 
-            <p>
-            ${mensaje}
-            </p>
+            <p>${mensaje}</p>
 
         </div>
 

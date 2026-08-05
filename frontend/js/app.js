@@ -1,72 +1,92 @@
-// ===============================
-// APP PRINCIPAL
-// ===============================
+// ======================================
+// APP PRINCIPAL - ROOMAPP
+// ======================================
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", iniciarAplicacion);
+
+
+// ======================================
+// INICIO
+// ======================================
+
+async function iniciarAplicacion() {
 
     try {
 
-        // ==========================
-        // 1. VALIDAR TOKEN
-        // ==========================
-        const token = localStorage.getItem("token");
+        validarSesion();
 
-        if (!token) {
-            window.location.href = "/frontend/login.html";
-            return;
-        }
-
-        // ==========================
-        // 2. OBTENER USUARIO
-        // ==========================
+        // Obtener usuario una sola vez
         const usuario = await getCurrentUser();
 
-        // ==========================
-        // 3. UI BASE
-        // ==========================
+        // Guardar usuario en memoria
+        window.currentUser = usuario;
+
+        // Construir interfaz
         mostrarUsuario(usuario);
         crearMenuPorRol(usuario.rol);
 
-        // ==========================
-        // 4. PERIODOS
-        // ==========================
+        // Marcar automáticamente el primer botón
+        if (typeof activarPrimerBoton === "function") {
+            activarPrimerBoton();
+        }
+
+        // Periodos
         await cargarPeriodos();
+
         configurarSelectorPeriodo();
 
-        // ==========================
-        // 5. LOADING
-        // ==========================
-        mostrarLoading();
-
-        // ==========================
-        // 6. CARGA INICIAL
-        // ==========================
+        // Cargar vista inicial
         await cargarVistaInicial(usuario);
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error("ERROR APP:", error);
 
-        // 🔥 SOLO si es error de autenticación
         if (
             error.message.includes("401") ||
             error.message.includes("Unauthorized")
         ) {
-            localStorage.removeItem("token");
-            window.location.href = "/frontend/login.html";
-        } else {
-            mostrarError("Error cargando la aplicación");
+
+            logout();
+            return;
+
         }
+
+        mostrarError("No fue posible iniciar la aplicación.");
+
     }
 
-});
+}
 
 
-// ===============================
-// CONTROL DE VISTA INICIAL
-// ===============================
+
+// ======================================
+// VALIDAR SESIÓN
+// ======================================
+
+function validarSesion() {
+
+    const token = getToken();
+
+    if (!token) {
+
+        window.location.href = "/frontend/login.html";
+        throw new Error("Sin sesión");
+
+    }
+
+}
+
+
+
+// ======================================
+// VISTA INICIAL
+// ======================================
 
 async function cargarVistaInicial(usuario) {
+
+    mostrarLoading();
 
     try {
 
@@ -76,188 +96,219 @@ async function cargarVistaInicial(usuario) {
         ) {
 
             const data = await cargarMiHorario();
+
             mostrarHorarios(data);
 
-        } else {
+        }
+        else {
 
             const data = await getHorariosGenerales();
+
             mostrarHorarios(data);
 
         }
 
-    } catch (error) {
+    }
+    catch (error) {
 
-        console.error("Error cargando vista:", error);
-        mostrarError("No se pudo cargar la información");
+        console.error(error);
+
+        mostrarError(
+            "No fue posible cargar la información."
+        );
 
     }
 
 }
 
 
-// ===============================
+
+// ======================================
 // SELECTOR DE PERIODO
-// ===============================
+// ======================================
 
 function configurarSelectorPeriodo() {
 
-    const selector = document.getElementById("selector-periodo");
+    const selector =
+        document.getElementById(
+            "selector-periodo"
+        );
 
     if (!selector) return;
 
-    selector.addEventListener("change", async (e) => {
 
-        const periodoId = e.target.value;
+    selector.addEventListener(
+        "change",
+        async (e) => {
 
-        localStorage.setItem("periodo_id", periodoId);
-
-        mostrarLoading();
-
-        try {
+            localStorage.setItem(
+                "periodo_id",
+                e.target.value
+            );
 
             await cargarModulo("horario");
 
-        } catch (error) {
-
-            console.error("Error cambiando periodo:", error);
-            mostrarError("Error al cambiar periodo");
-
         }
-
-    });
+    );
 
 }
 
 
-// ===============================
-// PERIODOS
-// ===============================
 
-async function cargarPeriodos(){
+// ======================================
+// CARGAR PERIODOS
+// ======================================
 
-    console.log("INICIANDO cargarPeriodos");
+async function cargarPeriodos() {
 
-
-    const select = document.getElementById("selector-periodo");
-
-
-    console.log(
-        "SELECTOR:",
-        select
-    );
-
-
-    if(!select) return;
-
-
-    try{
-
-        const periodos = await getPeriodos();
-
-
-        console.log(
-            "PERIODOS RECIBIDOS:",
-            periodos
+    const selector =
+        document.getElementById(
+            "selector-periodo"
         );
 
+    if (!selector) return;
 
-        if(!periodos || periodos.length === 0){
-            console.warn("No existen periodos");
+    try {
+
+        const periodos =
+            await getPeriodos();
+
+        if (
+            !periodos ||
+            periodos.length === 0
+        ) {
+
+            selector.innerHTML =
+                "<option>No hay periodos</option>";
+
             return;
+
         }
 
+        selector.innerHTML =
+            periodos.map(p => `
 
-        select.innerHTML = periodos.map(p => `
-            <option value="${p.id}">
-                ${p.nombre}
-            </option>
-        `).join("");
+                <option value="${p.id}">
+                    ${p.nombre}
+                </option>
 
+            `).join("");
 
         localStorage.setItem(
             "periodo_id",
             periodos[0].id
         );
 
-
-        console.log(
-            "PERIODO GUARDADO:",
-            localStorage.getItem("periodo_id")
-        );
-
-
     }
-    catch(error){
+    catch (error) {
 
-        console.error(
-            "ERROR PERIODOS:",
-            error
-        );
+        console.error(error);
 
     }
 
 }
 
 
-// ===============================
+
+// ======================================
 // INFORMACIÓN DEL USUARIO
-// ===============================
+// ======================================
 
 function mostrarUsuario(usuario) {
 
-    const elemento = document.getElementById("usuario-info");
+    const elemento =
+        document.getElementById(
+            "usuario-info"
+        );
 
     if (!elemento) return;
 
     elemento.innerHTML = `
-        Usuario: <strong>${usuario.email}</strong><br>
-        Rol: ${usuario.rol}
+
+        <strong>${usuario.email}</strong>
+
+        <br>
+
+        ${usuario.rol}
+
     `;
+
 }
 
 
-// ===============================
-// UI: LOADING
-// ===============================
+
+// ======================================
+// LOADING
+// ======================================
 
 function mostrarLoading() {
 
-    const contenedor = document.getElementById("contenido");
+    const contenedor =
+        document.getElementById(
+            "contenido"
+        );
 
     if (!contenedor) return;
 
     contenedor.innerHTML = `
+
         <div style="text-align:center;padding:40px;">
+
             <div class="spinner"></div>
-            <p id="loading">Cargando información...</p>
+
+            <p id="loading">
+                Cargando...
+            </p>
+
         </div>
+
     `;
+
 }
 
 
-// ===============================
-// UI: ERROR
-// ===============================
 
-function mostrarError(mensaje = "Ocurrió un error") {
+// ======================================
+// ERROR
+// ======================================
 
-    const contenedor = document.getElementById("contenido");
+function mostrarError(
+    mensaje = "Ocurrió un error"
+) {
+
+    const contenedor =
+        document.getElementById(
+            "contenido"
+        );
 
     if (!contenedor) return;
 
     contenedor.innerHTML = `
-        <div style="text-align:center;padding:40px;color:red;">
-            <h3>⚠️ Error</h3>
+
+        <div
+            style="
+                text-align:center;
+                padding:40px;
+                color:red;
+            "
+        >
+
+            <h2>⚠️ Error</h2>
+
             <p>${mensaje}</p>
+
         </div>
+
     `;
+
 }
 
 
-// ===============================
-// EXPOSICIÓN GLOBAL CONTROLADA
-// ===============================
 
-window.cargarMiHorario = cargarMiHorario;
-window.mostrarHorarios = mostrarHorarios;
+// ======================================
+// EXPOSICIÓN GLOBAL
+// ======================================
+
+window.mostrarLoading = mostrarLoading;
+window.mostrarError = mostrarError;
 window.cargarModulo = cargarModulo;
