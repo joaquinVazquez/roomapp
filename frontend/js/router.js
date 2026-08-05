@@ -79,15 +79,49 @@ function crearMenuPorRol(rol) {
     ) {
 
         opciones = [
+
             {
-                nombre: "📊 Horario general",
+                nombre: "🏠 Inicio",
+                accion: "inicio"
+            },
+
+            {
+                nombre: "👤 Usuarios",
+                accion: "usuarios"
+            },
+
+            {
+                nombre: "🏫 Aulas",
+                accion: "aulas"
+            },
+
+            {
+                nombre: "📚 Materias",
+                accion: "materias"
+            },
+
+            {
+                nombre: "👥 Grupos",
+                accion: "grupos"
+            },
+
+            {
+                nombre: "🕒 Horarios",
+                accion: "horarios"
+            },
+
+            {
+                nombre: "📅 Períodos",
+                accion: "periodos"
+            },
+
+            {
+                nombre: "📊 Horario General",
                 accion: "general"
             }
+
         ];
-
     }
-
-
 
     // ----------------------------
     // RENDER
@@ -155,7 +189,7 @@ function activarPrimerBoton() {
 
 
 // ===============================
-// CARGA DE MÓDULOS
+// CARGA DE MÓDULOS (SPA)
 // ===============================
 
 async function cargarModulo(opcion) {
@@ -166,33 +200,87 @@ async function cargarModulo(opcion) {
 
         switch (opcion) {
 
-            case "horario":
+            case "inicio":
 
-                const horario = await cargarMiHorario();
-                mostrarHorarios(horario);
+                document.getElementById("contenido").innerHTML = `
+                    <h2>🏠 Inicio</h2>
+                    <p>Bienvenido a RoomApp.</p>
+                `;
+                break;
+
+            case "usuarios":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>👤 Usuarios</h2>
+                    <p>Módulo en construcción.</p>
+                `;
+                break;
+
+            case "aulas":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>🏫 Aulas</h2>
+                    <p>Módulo en construcción.</p>
+                `;
+                break;
+
+            case "materias":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>📚 Materias</h2>
+                    <p>Módulo en construcción.</p>
+                `;
+                break;
+
+            case "grupos":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>👥 Grupos</h2>
+                    <p>Módulo en construcción.</p>
+                `;
+                break;
+
+            case "horarios":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>🕒 Horarios</h2>
+                    <p>Módulo en construcción.</p>
+                `;
+                break;
+
+            case "periodos":
+
+                document.getElementById("contenido").innerHTML = `
+                    <h2>📅 Períodos Académicos</h2>
+                    <p>Módulo en construcción.</p>
+                `;
                 break;
 
             case "general":
 
-                const general = await getHorariosGenerales();
-                mostrarHorarios(general);
+                await cargarHorarioGeneral();
+                break;
+
+            case "horario":
+
+                const data = await cargarMiHorario();
+                mostrarHorarios(data);
                 break;
 
             default:
 
                 document.getElementById("contenido").innerHTML = `
-                    <h2>Módulo en construcción</h2>
+                    <h2>Módulo no encontrado</h2>
                 `;
 
         }
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error("Error cargando módulo:", error);
 
-        mostrarError(
-            "No fue posible cargar la información."
-        );
+        mostrarError("No se pudo cargar el módulo.");
 
     }
 
