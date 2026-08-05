@@ -210,10 +210,8 @@ async function cargarModulo(opcion) {
 
             case "usuarios":
 
-                document.getElementById("contenido").innerHTML = `
-                    <h2>👤 Usuarios</h2>
-                    <p>Módulo en construcción.</p>
-                `;
+                await cargarUsuarios();
+
                 break;
 
             case "aulas":
@@ -258,8 +256,13 @@ async function cargarModulo(opcion) {
 
             case "general":
 
+                console.log("Cargando horario general");
+
                 await cargarHorarioGeneral();
-                break;
+
+                console.log("Horario general terminado");
+
+            break;
 
             case "horario":
 

@@ -35,18 +35,32 @@ async function cargarMiHorario() {
 // HORARIO GENERAL
 // ===============================
 
-async function cargarHorarioGeneral() {
+async function cargarHorarioGeneral(){
 
-    try {
+    try{
 
-        return await getHorariosGenerales();
+        const data =
+            await getHorariosGenerales();
+
+        console.log(
+            "HORARIO GENERAL:",
+            data
+        );
+
+        mostrarHorarios(data);
+
 
     }
-    catch (error) {
+    catch(error){
 
-        console.error("Error cargando horario general:", error);
+        console.error(
+            "Error horario general:",
+            error
+        );
 
-        return { dias: [] };
+        mostrarError(
+            "No se pudo cargar horario general"
+        );
 
     }
 

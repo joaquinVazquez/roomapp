@@ -21,6 +21,17 @@ function requireAuth() {
     return token;
 }
 
+function authHeaders() {
+
+    const token = getToken();
+
+    console.log("TOKEN ENVIADO:", token);
+
+    return {
+        "Authorization": `Bearer ${token}`
+    };
+}
+
 
 // ==========================
 // CORE REQUEST (🔥 CLAVE)
@@ -61,6 +72,33 @@ async function apiRequest(endpoint) {
 
 async function getCurrentUser() {
     return await apiRequest("/users/me");
+}
+
+// ==========================
+// USUARIOS ADMIN
+// ==========================
+
+async function getUsuarios(){
+
+    const response = await fetch(
+        `${API_URL}/users/`,
+        {
+            headers: authHeaders()
+        }
+    );
+
+
+    if(!response.ok){
+
+        throw new Error(
+            "Error obteniendo usuarios"
+        );
+
+    }
+
+
+    return await response.json();
+
 }
 
 
@@ -139,8 +177,28 @@ window.API = {
     getToken,
     requireAuth,
     getCurrentUser,
+
     getHorariosDocente,
     getHorariosEstudiante,
+
     getHorariosGenerales,
-    getPeriodos
+    getPeriodos,
+
+    getUsuarios
 };
+
+window.authHeaders = authHeaders;
+
+window.getCurrentUser = getCurrentUser;
+
+window.getHorariosDocente = getHorariosDocente;
+
+window.getHorariosEstudiante = getHorariosEstudiante;
+
+window.getHorariosGenerales = getHorariosGenerales;
+
+window.getPeriodos = getPeriodos;
+
+window.getUsuarios = getUsuarios;
+
+window.authHeaders = authHeaders;
