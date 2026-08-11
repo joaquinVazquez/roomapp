@@ -1,65 +1,108 @@
 // ===============================
-// HORARIOS
+// MÓDULO: HORARIOS
+// ===============================
+
+
+// ===============================
+// MI HORARIO
 // ===============================
 
 async function cargarMiHorario() {
 
     try {
 
-        const usuario = await getCurrentUser();
+        const usuario =
+            await getCurrentUser();
 
-        if (usuario.rol === "DOCENTE") {
-            return await getHorariosDocente();
-        }
 
-        if (usuario.rol === "ESTUDIANTE") {
+        // -------------------------
+        // ESTUDIANTE
+        // -------------------------
+
+        if (
+            usuario.rol === "ESTUDIANTE"
+        ) {
+
             return await getHorariosEstudiante();
+
         }
 
-        return { dias: [] };
+
+        // -------------------------
+        // DOCENTE
+        // -------------------------
+
+        if (
+            usuario.rol === "DOCENTE"
+        ) {
+
+            return await getHorariosDocente();
+
+        }
+
+
+        // -------------------------
+        // OTROS ROLES
+        // -------------------------
+
+        return {
+            dias: []
+        };
 
     }
     catch (error) {
 
-        console.error("Error cargando horario:", error);
+        console.error(
+            "Error cargando horario:",
+            error
+        );
 
-        return { dias: [] };
+        return {
+            dias: []
+        };
 
     }
 
 }
-
 
 
 // ===============================
 // HORARIO GENERAL
 // ===============================
 
-async function cargarHorarioGeneral(){
+async function cargarHorarioGeneral() {
 
-    try{
+    try {
+
+        console.log(
+            "Cargando horario general..."
+        );
+
 
         const data =
             await getHorariosGenerales();
+
 
         console.log(
             "HORARIO GENERAL:",
             data
         );
 
+
         mostrarHorarios(data);
 
 
     }
-    catch(error){
+    catch (error) {
 
         console.error(
             "Error horario general:",
             error
         );
 
+
         mostrarError(
-            "No se pudo cargar horario general"
+            "No se pudo cargar el horario general."
         );
 
     }
@@ -67,85 +110,171 @@ async function cargarHorarioGeneral(){
 }
 
 
-
 // ===============================
-// RENDER
+// RENDER HORARIOS
 // ===============================
 
 function mostrarHorarios(data) {
 
     const contenedor =
-        document.getElementById("contenido");
+        document.getElementById(
+            "contenido"
+        );
 
-    if (!contenedor) return;
 
+    if (!contenedor) {
+
+        console.error(
+            "No existe #contenido"
+        );
+
+        return;
+    }
+
+
+    if (!data) {
+
+        mostrarError(
+            "No se recibieron datos."
+        );
+
+        return;
+    }
 
 
     const dias =
-        data?.dias ??
-        data?.horarios ??
+        data.dias ??
+        data.horarios ??
         [];
 
 
+    // -------------------------
+    // SIN HORARIOS
+    // -------------------------
 
-    if (dias.length === 0) {
+    if (
+        !Array.isArray(dias) ||
+        dias.length === 0
+    ) {
 
         contenedor.innerHTML = `
 
-            <div style="text-align:center;padding:40px;">
+            <div
+                style="
+                    text-align:center;
+                    padding:40px;
+                "
+            >
 
-                <h3>📭 Sin horarios</h3>
+                <h3>
+                    📭 Sin horarios
+                </h3>
 
-                <p>No hay información disponible.</p>
+                <p>
+                    No hay información disponible
+                    para el periodo seleccionado.
+                </p>
 
             </div>
 
         `;
 
         return;
-
     }
 
 
+    // -------------------------
+    // LIMPIAR
+    // -------------------------
 
     contenedor.innerHTML = "";
 
 
+    // -------------------------
+    // CREAR DÍAS
+    // -------------------------
 
-    dias.forEach(dia => {
+    dias.forEach(
+        dia => {
 
-        const bloque =
-            document.createElement("section");
-
-        bloque.className = "dia";
-
-
-
-        bloque.innerHTML = `
-
-            <h2>${dia.dia}</h2>
-
-            ${dia.clases
-                .map(crearCardHorario)
-                .join("")}
-
-        `;
+            const bloque =
+                document.createElement(
+                    "section"
+                );
 
 
+            bloque.className =
+                "dia";
 
-        contenedor.appendChild(bloque);
 
-    });
+            const clases =
+                Array.isArray(dia.clases)
+                ? dia.clases
+                : [];
+
+
+            bloque.innerHTML = `
+
+                <h2>
+                    ${dia.dia}
+                </h2>
+
+                ${
+                    clases
+                        .map(
+                            crearCardHorario
+                        )
+                        .join("")
+                }
+
+            `;
+
+
+            contenedor.appendChild(
+                bloque
+            );
+
+        }
+    );
 
 }
 
 
-
 // ===============================
-// CARD
+// CARD DE HORARIO
 // ===============================
 
 function crearCardHorario(clase) {
+
+    const aula =
+        clase.aula === "SIN ASIGNAR"
+
+        ? `
+            <span class="sin-aula">
+                SIN ASIGNAR
+            </span>
+        `
+
+        : (
+            clase.aula ??
+            "SIN ASIGNAR"
+        );
+
+
+    const docente =
+        clase.docente
+
+        ? `
+            <div class="detalle">
+
+                👨‍🏫
+                ${clase.docente}
+
+            </div>
+        `
+
+        : "";
+
 
     return `
 
@@ -153,55 +282,36 @@ function crearCardHorario(clase) {
 
             <div class="hora">
 
-                ⏰ ${clase.hora}
+                ⏰
+                ${clase.hora ?? ""}
 
             </div>
+
 
             <div class="materia">
 
-                ${clase.materia}
+                ${clase.materia ?? ""}
 
             </div>
+
 
             <div class="detalle">
 
                 👥 Grupo:
-                ${clase.grupo}
+                ${clase.grupo ?? ""}
 
             </div>
+
 
             <div class="detalle">
 
                 🏫 Aula:
-
-                ${
-                    clase.aula === "SIN ASIGNAR"
-
-                    ? `<span class="sin-aula">
-                        SIN ASIGNAR
-                      </span>`
-
-                    : clase.aula
-                }
+                ${aula}
 
             </div>
 
-            ${
-                clase.docente
 
-                ? `
-
-                <div class="detalle">
-
-                    👨‍🏫 ${clase.docente}
-
-                </div>
-
-                `
-
-                : ""
-
-            }
+            ${docente}
 
         </div>
 
@@ -210,6 +320,54 @@ function crearCardHorario(clase) {
 }
 
 
+// ===============================
+// MENSAJE DE ERROR
+// ===============================
+
+function mostrarError(
+    mensaje = "Ocurrió un error"
+) {
+
+    const contenedor =
+        document.getElementById(
+            "contenido"
+        );
+
+
+    if (!contenedor) {
+
+        return;
+    }
+
+
+    contenedor.innerHTML = `
+
+        <div
+            style="
+                text-align:center;
+                padding:40px;
+                color:red;
+            "
+        >
+
+            <h3>
+                ⚠️ Error
+            </h3>
+
+            <p>
+                ${mensaje}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+// ===============================
+// EXPOSICIÓN CONTROLADA
+// ===============================
 
 // ===============================
 // ERROR
@@ -223,8 +381,6 @@ function mostrarError(
         document.getElementById("contenido");
 
     if (!contenedor) return;
-
-
 
     contenedor.innerHTML = `
 
@@ -243,5 +399,13 @@ function mostrarError(
         </div>
 
     `;
-
 }
+
+
+// ===============================
+// EXPOSICIÓN GLOBAL
+// ===============================
+
+window.cargarMiHorario = cargarMiHorario;
+window.cargarHorarioGeneral = cargarHorarioGeneral;
+window.mostrarHorarios = mostrarHorarios;

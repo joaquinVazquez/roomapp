@@ -1,35 +1,123 @@
 // ===============================
-// MODULO USUARIOS ADMIN
+// MÓDULO: USUARIOS - ADMIN
 // ===============================
 
+// ===============================
+// CARGAR USUARIOS
+// ===============================
 
-async function cargarUsuarios(){
+async function cargarUsuarios() {
+
+    try {
+
+        console.log("Cargando módulo Usuarios...");
+
+        const usuarios = await getUsuarios();
+
+        const contenedor =
+            document.getElementById("contenido");
 
 
-    try{
+        if (!contenedor) {
+
+            console.error(
+                "No existe el contenedor #contenido"
+            );
+
+            return;
+        }
 
 
-        const usuarios =
-            await getUsuarios();
+        if (!usuarios || usuarios.length === 0) {
+
+            contenedor.innerHTML = `
+
+                <h2>👥 Usuarios</h2>
+
+                <div class="card">
+
+                    <p>
+                        No existen usuarios registrados.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
 
 
+        contenedor.innerHTML = `
 
-        mostrarUsuarios(
-            usuarios
-        );
+            <h2>👥 Usuarios</h2>
 
+            <p>
+                Gestión de usuarios del sistema.
+            </p>
+
+            <div id="lista-usuarios">
+
+                ${usuarios.map(usuario => `
+
+                    <div class="card">
+
+                        <strong>
+                            ${usuario.nombre}
+                            ${usuario.apellido}
+                        </strong>
+
+                        <br>
+
+                        📧 ${usuario.email}
+
+                        <br>
+
+                        🎭 Rol:
+                        ${usuario.rol}
+
+                        <br>
+
+                        Estado:
+
+                        <strong>
+                            ${
+                                usuario.activo
+                                ? "Activo"
+                                : "Inactivo"
+                            }
+                        </strong>
+
+                        <br><br>
+
+                        <button
+                            onclick="toggleUsuarioUI(${usuario.id})"
+                        >
+                            ${
+                                usuario.activo
+                                ? "Desactivar"
+                                : "Activar"
+                            }
+                        </button>
+
+                    </div>
+
+                `).join("")}
+
+            </div>
+
+        `;
 
     }
-    catch(error){
+    catch (error) {
 
         console.error(
             "Error usuarios:",
             error
         );
 
-
         mostrarError(
-            "No se pudieron cargar usuarios"
+            "No se pudieron cargar los usuarios"
         );
 
     }
@@ -37,119 +125,47 @@ async function cargarUsuarios(){
 }
 
 
+// ===============================
+// ACTIVAR / DESACTIVAR USUARIO
+// ===============================
 
+async function toggleUsuarioUI(userId) {
 
+    try {
 
-function mostrarUsuarios(usuarios){
-
-
-    const contenedor =
-        document.getElementById(
-            "contenido"
+        console.log(
+            "Cambiando estado usuario:",
+            userId
         );
 
+        await toggleUsuario(userId);
 
-    if(!contenedor)
-        return;
+        // Recargar lista
+        await cargarUsuarios();
 
+    }
+    catch (error) {
 
+        console.error(
+            "Error cambiando estado:",
+            error
+        );
 
-    let html = `
+        alert(
+            "No se pudo cambiar el estado del usuario."
+        );
 
-        <h2>
-            👥 Gestión de Usuarios
-        </h2>
-
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                    Nombre
-                    </th>
-
-                    <th>
-                    Email
-                    </th>
-
-                    <th>
-                    Rol
-                    </th>
-
-                    <th>
-                    Estado
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-    `;
-
-
-
-    usuarios.forEach(usuario=>{
-
-
-        html += `
-
-            <tr>
-
-                <td>
-                ${usuario.nombre}
-                ${usuario.apellido}
-                </td>
-
-
-                <td>
-                ${usuario.email}
-                </td>
-
-
-                <td>
-                ${usuario.rol}
-                </td>
-
-
-                <td>
-                ${
-                    usuario.activo
-                    ?
-                    "Activo"
-                    :
-                    "Inactivo"
-                }
-                </td>
-
-
-            </tr>
-
-
-        `;
-
-
-    });
-
-
-
-    html += `
-
-            </tbody>
-
-        </table>
-
-    `;
-
-
-    contenedor.innerHTML = html;
+    }
 
 }
 
 
-window.cargarUsuarios = cargarUsuarios;
+// ===============================
+// EXPOSICIÓN GLOBAL
+// ===============================
+
+window.cargarUsuarios =
+    cargarUsuarios;
+
+window.toggleUsuarioUI =
+    toggleUsuarioUI;

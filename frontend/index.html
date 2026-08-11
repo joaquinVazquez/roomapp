@@ -2,64 +2,78 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>RoomApp</title>
 
-    <meta 
-        name="viewport" 
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link 
-        rel="stylesheet" 
-        href="css/styles.css"
-    >
-
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
-<header class="header">
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
+    <header class="header">
 
-    <div class="header-left">
-        <h1>📅 RoomApp</h1>
+        <div class="header-left">
+            <h1>📅 RoomApp</h1>
+        </div>
+
+        <div class="header-right">
+
+            <select id="selector-periodo"></select>
+
+            <div id="usuario-info"></div>
+
+            <button onclick="logout()">
+                Cerrar sesión
+            </button>
+
+        </div>
+
+    </header>
+
+    <!-- ========================= -->
+    <!-- LAYOUT -->
+    <!-- ========================= -->
+    <div class="layout">
+
+        <aside id="menu" class="sidebar"></aside>
+
+        <main id="contenido" class="main">
+            <h2>Bienvenido</h2>
+            <p>Selecciona una opción</p>
+        </main>
+
     </div>
 
-    <div class="header-right">
+    <!-- ========================= -->
+    <!-- CORE (ORDEN IMPORTANTE)
+    <!-- ========================= -->
 
-        <select id="selector-periodo"></select>
+    <!-- 1. API -->
+    <script src="js/api.js"></script>
 
-        <div id="usuario-info"></div>
+    <!-- 2. AUTH -->
+    <script src="js/auth.js"></script>
 
-        <button onclick="logout()">
-            Cerrar sesión
-        </button>
+    <!-- 3. MÓDULOS BASE -->
+    <script src="js/modules/horarios.js"></script>
+    <script src="js/modules/usuarios.js"></script>
 
-    </div>
+    <!-- 4. MÓDULOS ADMIN -->
+    <script src="js/modules/admin/dashboard.js"></script>
+    <script src="js/modules/admin/aulas.js"></script>
+    <script src="js/modules/admin/materias.js"></script>
 
-</header>
+   
+    <!-- 5. ROUTER -->
+    <script src="js/router.js"></script>
 
-<div class="layout">
-
-    <aside id="menu" class="sidebar"></aside>
-
-    <main id="contenido" class="main">
-        <h2>Bienvenido</h2>
-        <p>Selecciona una opción</p>
-    </main>
-
-</div>
-
-<script src="js/api.js"></script>
-<script src="js/router.js"></script>
-
-<script src="js/modules/horarios.js"></script>
-
-<script src="js/modules/usuarios.js"></script>
-
-<script src="js/app.js"></script>
+    <!-- 6. APP -->
+    <script src="js/app.js"></script>
 
 </body>
 

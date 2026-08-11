@@ -156,3 +156,43 @@ def debug_user(
         "rol_id": current_user.rol_id,
         "rol": current_user.rol.nombre
     }
+
+# =========================
+# ACTIVAR / DESACTIVAR USUARIO
+# =========================
+
+@router.patch("/{user_id}/toggle")
+def toggle_usuario(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+
+    # 🔒 Solo admin
+    if current_user.rol.nombre != "ADMINISTRADOR":
+        raise HTTPException(
+            status_code=403,
+            detail="No tiene permisos"
+        )
+
+    usuario = db.query(Usuario).filter(
+        Usuario.id == user_id
+    ).first()
+
+    if not usuario:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
+    # 🔁 cambiar estado
+    usuario.activo = not usuario.activo
+
+    db.commit()
+    db.refresh(usuario)
+
+    return {
+        "message": "Estado actualizado",
+        "usuario_id": usuario.id,
+        "activo": usuario.activo
+    }

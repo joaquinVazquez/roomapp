@@ -6,7 +6,7 @@ async function redirectByRole() {
 
     try {
 
-        const user = await getCurrentUser();
+        const user = await API.getCurrentUser();
 
         switch (user.rol) {
 
@@ -27,9 +27,7 @@ async function redirectByRole() {
 
         console.error("Error en redirectByRole:", error);
         alert("No fue posible iniciar sesión.");
-
     }
-
 }
 
 
@@ -46,80 +44,53 @@ function crearMenuPorRol(rol) {
 
     let opciones = [];
 
-
-
     // ----------------------------
     // DOCENTE / ESTUDIANTE
     // ----------------------------
 
-    if (
-        rol === "DOCENTE" ||
-        rol === "ESTUDIANTE"
-    ) {
+    if (rol === "DOCENTE" || rol === "ESTUDIANTE") {
 
         opciones = [
-            {
-                nombre: "📅 Mi horario",
-                accion: "horario"
-            }
+            { nombre: "📅 Mi horario", accion: "horario" }
         ];
-
     }
 
-
-
     // ----------------------------
-    // ADMINISTRATIVOS
+    // ADMINISTRADOR
     // ----------------------------
 
-    if (
-        rol === "ADMINISTRADOR" ||
-        rol === "COORDINADOR_ACADEMICO" ||
-        rol === "PERSONAL_ADMINISTRATIVO"
-    ) {
+    else if (rol === "ADMINISTRADOR") {
 
         opciones = [
+            { nombre: "📊 Dashboard", accion: "dashboard" },
+            { nombre: "👥 Usuarios", accion: "usuarios" },
+            { nombre: "🏫 Aulas", accion: "aulas" },
+            { nombre: "📚 Materias", accion: "materias" },
+            { nombre: "📅 Horario general", accion: "general" }
+        ];
+    }
 
-            {
-                nombre: "🏠 Inicio",
-                accion: "inicio"
-            },
+    // ----------------------------
+    // COORDINADOR
+    // ----------------------------
 
-            {
-                nombre: "👤 Usuarios",
-                accion: "usuarios"
-            },
+    else if (rol === "COORDINADOR_ACADEMICO") {
 
-            {
-                nombre: "🏫 Aulas",
-                accion: "aulas"
-            },
+        opciones = [
+            { nombre: "🏫 Aulas", accion: "aulas" },
+            { nombre: "📚 Materias", accion: "materias" },
+            { nombre: "📅 Horario general", accion: "general" }
+        ];
+    }
 
-            {
-                nombre: "📚 Materias",
-                accion: "materias"
-            },
+    // ----------------------------
+    // PERSONAL ADMINISTRATIVO
+    // ----------------------------
 
-            {
-                nombre: "👥 Grupos",
-                accion: "grupos"
-            },
+    else if (rol === "PERSONAL_ADMINISTRATIVO") {
 
-            {
-                nombre: "🕒 Horarios",
-                accion: "horarios"
-            },
-
-            {
-                nombre: "📅 Períodos",
-                accion: "periodos"
-            },
-
-            {
-                nombre: "📊 Horario General",
-                accion: "general"
-            }
-
+        opciones = [
+            { nombre: "📅 Horario general", accion: "general" }
         ];
     }
 
@@ -134,18 +105,12 @@ function crearMenuPorRol(rol) {
             data-accion="${op.accion}"
             onclick="activarMenu(this,'${op.accion}')"
         >
-
             ${op.nombre}
-
         </button>
 
     `).join("");
 
-
-
-    // Activar automáticamente
     activarPrimerBoton();
-
 }
 
 
@@ -163,7 +128,6 @@ function activarMenu(boton, accion) {
     boton.classList.add("activo");
 
     cargarModulo(accion);
-
 }
 
 
@@ -174,8 +138,7 @@ function activarMenu(boton, accion) {
 
 function activarPrimerBoton() {
 
-    const primerBoton =
-        document.querySelector(".menu-btn");
+    const primerBoton = document.querySelector(".menu-btn");
 
     if (!primerBoton) return;
 
@@ -183,7 +146,6 @@ function activarPrimerBoton() {
         primerBoton,
         primerBoton.dataset.accion
     );
-
 }
 
 
@@ -200,59 +162,50 @@ async function cargarModulo(opcion) {
 
         switch (opcion) {
 
-            case "inicio":
+            case "dashboard":
 
                 document.getElementById("contenido").innerHTML = `
-                    <h2>🏠 Inicio</h2>
-                    <p>Bienvenido a RoomApp.</p>
+                    <h2>📊 Dashboard</h2>
+                    <p>Panel en construcción</p>
                 `;
-                break;
+            break;
 
             case "usuarios":
 
                 await cargarUsuarios();
-
-                break;
+            break;
 
             case "aulas":
 
                 document.getElementById("contenido").innerHTML = `
                     <h2>🏫 Aulas</h2>
-                    <p>Módulo en construcción.</p>
+                    <p>Módulo en construcción</p>
                 `;
-                break;
+            break;
 
             case "materias":
 
                 document.getElementById("contenido").innerHTML = `
                     <h2>📚 Materias</h2>
-                    <p>Módulo en construcción.</p>
+                    <p>Módulo en construcción</p>
                 `;
-                break;
+            break;
 
             case "grupos":
 
                 document.getElementById("contenido").innerHTML = `
                     <h2>👥 Grupos</h2>
-                    <p>Módulo en construcción.</p>
+                    <p>Módulo en construcción</p>
                 `;
-                break;
-
-            case "horarios":
-
-                document.getElementById("contenido").innerHTML = `
-                    <h2>🕒 Horarios</h2>
-                    <p>Módulo en construcción.</p>
-                `;
-                break;
+            break;
 
             case "periodos":
 
                 document.getElementById("contenido").innerHTML = `
                     <h2>📅 Períodos Académicos</h2>
-                    <p>Módulo en construcción.</p>
+                    <p>Módulo en construcción</p>
                 `;
-                break;
+            break;
 
             case "general":
 
@@ -261,30 +214,25 @@ async function cargarModulo(opcion) {
                 await cargarHorarioGeneral();
 
                 console.log("Horario general terminado");
-
             break;
 
             case "horario":
 
                 const data = await cargarMiHorario();
                 mostrarHorarios(data);
-                break;
+            break;
 
             default:
 
                 document.getElementById("contenido").innerHTML = `
                     <h2>Módulo no encontrado</h2>
                 `;
-
         }
 
-    }
-    catch (error) {
+    } catch (error) {
 
         console.error("Error cargando módulo:", error);
 
         mostrarError("No se pudo cargar el módulo.");
-
     }
-
 }
