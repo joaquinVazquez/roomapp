@@ -14,45 +14,76 @@ from app.core.security import get_current_user
 
 from app.core.permissions import require_permiso
 
+
+# =========================================================
+# ROUTER
+# =========================================================
+
 router = APIRouter(
     prefix="/users",
     tags=["Usuarios"]
 )
 
 
-# =========================
+# =========================================================
 # CREAR USUARIO
-# =========================
+# =========================================================
 
-@router.post("/")
+@router.post(
+    "/",
+    dependencies=[
+        Depends(require_permiso("GESTIONAR_USUARIOS"))
+    ]
+)
 def create_user(
     user: UsuarioCreate,
     db: Session = Depends(get_db)
 ):
 
-    # 🔹 Validar rol
-    rol = db.query(Rol).filter(
-        Rol.id == user.rol_id
-    ).first()
+    # =====================================================
+    # VALIDAR ROL
+    # =====================================================
+
+    rol = (
+        db.query(Rol)
+        .filter(
+            Rol.id == user.rol_id
+        )
+        .first()
+    )
 
     if not rol:
+
         raise HTTPException(
             status_code=404,
             detail="El rol no existe"
         )
 
-    # 🔹 Validar correo duplicado
-    existe = db.query(Persona).filter(
-        Persona.email == user.email
-    ).first()
+
+    # =====================================================
+    # VALIDAR CORREO DUPLICADO
+    # =====================================================
+
+    existe = (
+        db.query(Persona)
+        .filter(
+            Persona.email == user.email
+        )
+        .first()
+    )
 
     if existe:
+
         raise HTTPException(
             status_code=400,
             detail="El correo ya existe"
         )
 
-    # 🔹 Crear persona
+
+    # =====================================================
+    # CREAR PERSONA
+    # =====================================================
+
     persona = Persona(
         nombre=user.nombre,
         apellido=user.apellido,
@@ -60,10 +91,16 @@ def create_user(
     )
 
     db.add(persona)
+
     db.commit()
+
     db.refresh(persona)
 
-    # 🔹 Crear usuario
+
+    # =====================================================
+    # CREAR USUARIO
+    # =====================================================
+
     usuario = Usuario(
         persona_id=persona.id,
         rol_id=user.rol_id,
@@ -73,17 +110,25 @@ def create_user(
     )
 
     db.add(usuario)
+
     db.commit()
+
     db.refresh(usuario)
+
+
+    # =====================================================
+    # RESPUESTA
+    # =====================================================
 
     return {
         "message": "Usuario creado correctamente",
         "usuario_id": usuario.id
     }
 
-# =========================
+
+# =========================================================
 # LISTAR USUARIOS
-# =========================
+# =========================================================
 
 @router.get(
     "/",
@@ -102,7 +147,9 @@ def get_users(
         .all()
     )
 
+
     resultado = []
+
 
     for usuario in usuarios:
 
@@ -122,11 +169,13 @@ def get_users(
 
         })
 
+
     return resultado
 
-# =========================
+
+# =========================================================
 # USUARIO ACTUAL
-# =========================
+# =========================================================
 
 @router.get("/me")
 def get_me(
@@ -134,10 +183,19 @@ def get_me(
 ):
 
     return {
+
         "id": current_user.id,
+
         "email": current_user.email,
+
         "rol": current_user.rol.nombre
+
     }
+
+
+# =========================================================
+# DEBUG USUARIO ACTUAL
+# =========================================================
 
 @router.get("/debug-user")
 def debug_user(
@@ -145,48 +203,75 @@ def debug_user(
 ):
 
     return {
+
         "id": current_user.id,
+
         "email": current_user.email,
+
         "rol_id": current_user.rol_id,
+
         "rol": current_user.rol.nombre
+
     }
 
-# =========================
-# ACTIVAR / DESACTIVAR USUARIO
-# =========================
 
-@router.patch("/{user_id}/toggle")
+# =========================================================
+# ACTIVAR / DESACTIVAR USUARIO
+# =========================================================
+
+@router.patch(
+    "/{user_id}/toggle",
+    dependencies=[
+        Depends(require_permiso("GESTIONAR_USUARIOS"))
+    ]
+)
 def toggle_usuario(
     user_id: int,
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
 
-    # 🔒 Solo admin
-    if current_user.rol.nombre != "ADMINISTRADOR":
-        raise HTTPException(
-            status_code=403,
-            detail="No tiene permisos"
-        )
+    # =====================================================
+    # BUSCAR USUARIO
+    # =====================================================
 
-    usuario = db.query(Usuario).filter(
-        Usuario.id == user_id
-    ).first()
+    usuario = (
+        db.query(Usuario)
+        .filter(
+            Usuario.id == user_id
+        )
+        .first()
+    )
+
 
     if not usuario:
+
         raise HTTPException(
             status_code=404,
             detail="Usuario no encontrado"
         )
 
-    # 🔁 cambiar estado
+
+    # =====================================================
+    # CAMBIAR ESTADO
+    # =====================================================
+
     usuario.activo = not usuario.activo
 
     db.commit()
+
     db.refresh(usuario)
 
+
+    # =====================================================
+    # RESPUESTA
+    # =====================================================
+
     return {
+
         "message": "Estado actualizado",
+
         "usuario_id": usuario.id,
+
         "activo": usuario.activo
+
     }
