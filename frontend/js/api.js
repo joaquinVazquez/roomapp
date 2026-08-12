@@ -247,6 +247,19 @@ async function getUsuarios() {
 
 }
 
+// =====================================================
+// CREAR USUARIO
+// =====================================================
+
+async function crearUsuario(usuario) {
+
+    return await apiRequest(
+        "/users/",
+        "POST",
+        usuario
+    );
+
+}
 
 // =====================================================
 // ACTIVAR / DESACTIVAR USUARIO
@@ -531,6 +544,8 @@ window.getPeriodos =
 window.logout =
     logout;
 
+window.crearUsuario = crearUsuario;
+
 
 // =====================================================
 // OBJETO API
@@ -549,6 +564,8 @@ window.API = {
     getCurrentUser,
 
     getUsuarios,
+
+    crearUsuario,
 
     toggleUsuario,
 

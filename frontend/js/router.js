@@ -20,16 +20,26 @@ async function redirectByRole() {
                 break;
 
             default:
+
                 alert("Rol no configurado");
+
         }
 
-    } catch (error) {
-
-        console.error("Error en redirectByRole:", error);
-        alert("No fue posible iniciar sesión.");
     }
-}
+    catch (error) {
 
+        console.error(
+            "Error en redirectByRole:",
+            error
+        );
+
+        alert(
+            "No fue posible iniciar sesión."
+        );
+
+    }
+
+}
 
 
 // ===============================
@@ -38,98 +48,184 @@ async function redirectByRole() {
 
 function crearMenuPorRol(rol) {
 
-    const menu = document.getElementById("menu");
+    const menu =
+        document.getElementById("menu");
 
     if (!menu) return;
 
     let opciones = [];
 
+
     // ----------------------------
     // DOCENTE / ESTUDIANTE
     // ----------------------------
 
-    if (rol === "DOCENTE" || rol === "ESTUDIANTE") {
+    if (
+        rol === "DOCENTE" ||
+        rol === "ESTUDIANTE"
+    ) {
 
         opciones = [
-            { nombre: "📅 Mi horario", accion: "horario" }
+
+            {
+                nombre: "📅 Mi horario",
+                accion: "horario"
+            }
+
         ];
+
     }
+
 
     // ----------------------------
     // ADMINISTRADOR
     // ----------------------------
 
-    else if (rol === "ADMINISTRADOR") {
+    else if (
+        rol === "ADMINISTRADOR"
+    ) {
 
         opciones = [
-            { nombre: "📊 Dashboard", accion: "dashboard" },
-            { nombre: "👥 Usuarios", accion: "usuarios" },
-            { nombre: "🏫 Aulas", accion: "aulas" },
-            { nombre: "📚 Materias", accion: "materias" },
-            { nombre: "📅 Horario general", accion: "general" }
+
+            {
+                nombre: "📊 Dashboard",
+                accion: "dashboard"
+            },
+
+            {
+                nombre: "👥 Usuarios",
+                accion: "usuarios"
+            },
+
+            {
+                nombre: "🏫 Aulas",
+                accion: "aulas"
+            },
+
+            {
+                nombre: "📚 Materias",
+                accion: "materias"
+            },
+
+            {
+                nombre: "📆 Periodos académicos",
+                accion: "periodos"
+            },
+
+            {
+                nombre: "📅 Horario general",
+                accion: "general"
+            }
+
         ];
+
     }
 
+
     // ----------------------------
-    // COORDINADOR
+    // COORDINADOR ACADÉMICO
     // ----------------------------
 
-    else if (rol === "COORDINADOR_ACADEMICO") {
+    else if (
+        rol === "COORDINADOR_ACADEMICO"
+    ) {
 
         opciones = [
-            { nombre: "🏫 Aulas", accion: "aulas" },
-            { nombre: "📚 Materias", accion: "materias" },
-            { nombre: "📅 Horario general", accion: "general" }
+
+            {
+                nombre: "🏫 Aulas",
+                accion: "aulas"
+            },
+
+            {
+                nombre: "📚 Materias",
+                accion: "materias"
+            },
+
+            {
+                nombre: "📆 Periodos académicos",
+                accion: "periodos"
+            },
+
+            {
+                nombre: "📅 Horario general",
+                accion: "general"
+            }
+
         ];
+
     }
+
 
     // ----------------------------
     // PERSONAL ADMINISTRATIVO
     // ----------------------------
 
-    else if (rol === "PERSONAL_ADMINISTRATIVO") {
+    else if (
+        rol === "PERSONAL_ADMINISTRATIVO"
+    ) {
 
         opciones = [
-            { nombre: "📅 Horario general", accion: "general" }
+
+            {
+                nombre: "📅 Horario general",
+                accion: "general"
+            }
+
         ];
+
     }
 
+
     // ----------------------------
-    // RENDER
+    // RENDER DEL MENÚ
     // ----------------------------
 
-    menu.innerHTML = opciones.map(op => `
+    menu.innerHTML = opciones
+        .map(op => `
 
-        <button
-            class="menu-btn"
-            data-accion="${op.accion}"
-            onclick="activarMenu(this,'${op.accion}')"
-        >
-            ${op.nombre}
-        </button>
+            <button
+                class="menu-btn"
+                data-accion="${op.accion}"
+                onclick="activarMenu(
+                    this,
+                    '${op.accion}'
+                )"
+            >
+                ${op.nombre}
+            </button>
 
-    `).join("");
+        `)
+        .join("");
+
 
     activarPrimerBoton();
-}
 
+}
 
 
 // ===============================
 // ACTIVAR BOTÓN DEL MENÚ
 // ===============================
 
-function activarMenu(boton, accion) {
+function activarMenu(
+    boton,
+    accion
+) {
 
     document
         .querySelectorAll(".menu-btn")
-        .forEach(btn => btn.classList.remove("activo"));
+        .forEach(btn =>
+            btn.classList.remove("activo")
+        );
+
 
     boton.classList.add("activo");
 
-    cargarModulo(accion);
-}
 
+    cargarModulo(accion);
+
+}
 
 
 // ===============================
@@ -138,20 +234,22 @@ function activarMenu(boton, accion) {
 
 function activarPrimerBoton() {
 
-    const primerBoton = document.querySelector(".menu-btn");
+    const primerBoton =
+        document.querySelector(".menu-btn");
 
     if (!primerBoton) return;
+
 
     activarMenu(
         primerBoton,
         primerBoton.dataset.accion
     );
+
 }
 
 
-
 // ===============================
-// CARGA DE MÓDULOS (SPA)
+// CARGA DE MÓDULOS - SPA
 // ===============================
 
 async function cargarModulo(opcion) {
@@ -160,79 +258,182 @@ async function cargarModulo(opcion) {
 
         mostrarLoading();
 
+
         switch (opcion) {
+
+
+            // -------------------------
+            // DASHBOARD
+            // -------------------------
 
             case "dashboard":
 
-                document.getElementById("contenido").innerHTML = `
+                document.getElementById(
+                    "contenido"
+                ).innerHTML = `
+
                     <h2>📊 Dashboard</h2>
-                    <p>Panel en construcción</p>
+
+                    <p>
+                        Panel en construcción
+                    </p>
+
                 `;
-            break;
+
+                break;
+
+
+            // -------------------------
+            // USUARIOS
+            // -------------------------
 
             case "usuarios":
 
                 await cargarUsuarios();
-            break;
+
+                break;
+
+
+            // -------------------------
+            // AULAS
+            // -------------------------
 
             case "aulas":
 
-                document.getElementById("contenido").innerHTML = `
+                document.getElementById(
+                    "contenido"
+                ).innerHTML = `
+
                     <h2>🏫 Aulas</h2>
-                    <p>Módulo en construcción</p>
+
+                    <p>
+                        Módulo en construcción
+                    </p>
+
                 `;
-            break;
+
+                break;
+
+
+            // -------------------------
+            // MATERIAS
+            // -------------------------
 
             case "materias":
 
-                document.getElementById("contenido").innerHTML = `
+                document.getElementById(
+                    "contenido"
+                ).innerHTML = `
+
                     <h2>📚 Materias</h2>
-                    <p>Módulo en construcción</p>
+
+                    <p>
+                        Módulo en construcción
+                    </p>
+
                 `;
-            break;
+
+                break;
+
+
+            // -------------------------
+            // GRUPOS
+            // -------------------------
 
             case "grupos":
 
-                document.getElementById("contenido").innerHTML = `
+                document.getElementById(
+                    "contenido"
+                ).innerHTML = `
+
                     <h2>👥 Grupos</h2>
-                    <p>Módulo en construcción</p>
+
+                    <p>
+                        Módulo en construcción
+                    </p>
+
                 `;
-            break;
+
+                break;
+
+
+            // -------------------------
+            // PERIODOS ACADÉMICOS
+            // -------------------------
 
             case "periodos":
 
-                document.getElementById("contenido").innerHTML = `
-                    <h2>📅 Períodos Académicos</h2>
-                    <p>Módulo en construcción</p>
-                `;
-            break;
+                await cargarPeriodosModulo();
+
+                break;
+
+            // -------------------------
+            // HORARIO GENERAL
+            // -------------------------
 
             case "general":
 
-                console.log("Cargando horario general");
+                console.log(
+                    "Cargando horario general"
+                );
+
 
                 await cargarHorarioGeneral();
 
-                console.log("Horario general terminado");
-            break;
+
+                console.log(
+                    "Horario general terminado"
+                );
+
+                break;
+
+
+            // -------------------------
+            // MI HORARIO
+            // -------------------------
 
             case "horario":
 
-                const data = await cargarMiHorario();
+                const data =
+                    await cargarMiHorario();
+
+
                 mostrarHorarios(data);
-            break;
+
+                break;
+
+
+            // -------------------------
+            // DEFAULT
+            // -------------------------
 
             default:
 
-                document.getElementById("contenido").innerHTML = `
-                    <h2>Módulo no encontrado</h2>
+                document.getElementById(
+                    "contenido"
+                ).innerHTML = `
+
+                    <h2>
+                        Módulo no encontrado
+                    </h2>
+
                 `;
+
         }
 
-    } catch (error) {
-
-        console.error("Error cargando módulo:", error);
-
-        mostrarError("No se pudo cargar el módulo.");
     }
+    catch (error) {
+
+        console.error(
+            "Error cargando módulo:",
+            error
+        );
+
+
+        mostrarError(
+            "No se pudo cargar el módulo."
+        );
+
+    }
+
 }
