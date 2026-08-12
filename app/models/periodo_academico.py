@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from sqlalchemy.orm import relationship
 
 from sqlalchemy import (
@@ -50,17 +51,23 @@ class PeriodoAcademico(Base):
         default=True
     )
 
+    vigente = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow
     )
 
     grupos = relationship(
-    "Grupo",
-    back_populates="periodo_academico"
+        "Grupo",
+        back_populates="periodo_academico"
     )
 
     inscripciones = relationship(
-    "Inscripcion",
-    back_populates="periodo_academico"
+        "Inscripcion",
+        back_populates="periodo_academico"
     )
