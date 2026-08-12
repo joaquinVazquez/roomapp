@@ -1,16 +1,41 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship
+
 from app.db.base_class import Base
 
 
-class RolPermiso(Base):
+class Permiso(Base):
 
-    __tablename__ = "roles_permisos"
+    __tablename__ = "permisos"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
-    rol_id = Column(Integer, ForeignKey("roles.id"))
-    permiso_id = Column(Integer, ForeignKey("permisos.id"))
+    nombre = Column(
+        String,
+        unique=True,
+        nullable=False
+    )
 
-    rol = relationship("Rol", back_populates="permisos")
-    permiso = relationship("Permiso", back_populates="roles")
+    descripcion = Column(
+        String,
+        nullable=True
+    )
+
+    activo = Column(
+        Boolean,
+        default=True
+    )
+
+    # =========================
+    # RELACIÓN CON ROLES
+    # =========================
+
+    roles = relationship(
+        "RolPermiso",
+        back_populates="permiso",
+        cascade="all, delete-orphan"
+    )

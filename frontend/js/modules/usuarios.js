@@ -17,108 +17,96 @@ async function cargarUsuarios() {
         const contenedor =
             document.getElementById("contenido");
 
-
         if (!contenedor) {
-
-            console.error(
-                "No existe el contenedor #contenido"
-            );
-
+            console.error("No existe #contenido");
             return;
         }
-
 
         if (!usuarios || usuarios.length === 0) {
 
             contenedor.innerHTML = `
-
                 <h2>👥 Usuarios</h2>
 
                 <div class="card">
-
-                    <p>
-                        No existen usuarios registrados.
-                    </p>
-
+                    <p>No existen usuarios registrados.</p>
                 </div>
-
             `;
-
             return;
         }
-
 
         contenedor.innerHTML = `
 
             <h2>👥 Usuarios</h2>
 
-            <p>
-                Gestión de usuarios del sistema.
-            </p>
+            <button onclick="mostrarFormularioCrear()" class="btn-primary">
+                + Nuevo Usuario
+            </button>
 
-            <div id="lista-usuarios">
+            <br><br>
 
-                ${usuarios.map(usuario => `
+            <table class="tabla-usuarios">
 
-                    <div class="card">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
 
-                        <strong>
-                            ${usuario.nombre}
-                            ${usuario.apellido}
-                        </strong>
+                <tbody>
 
-                        <br>
+                    ${usuarios.map(usuario => `
 
-                        📧 ${usuario.email}
+                        <tr>
 
-                        <br>
+                            <td>
+                                ${usuario.nombre} ${usuario.apellido}
+                            </td>
 
-                        🎭 Rol:
-                        ${usuario.rol}
+                            <td>${usuario.email}</td>
 
-                        <br>
+                            <td>${usuario.rol}</td>
 
-                        Estado:
+                            <td>
+                                <strong>
+                                    ${usuario.activo ? "Activo" : "Inactivo"}
+                                </strong>
+                            </td>
 
-                        <strong>
-                            ${
-                                usuario.activo
-                                ? "Activo"
-                                : "Inactivo"
-                            }
-                        </strong>
+                            <td>
 
-                        <br><br>
+                                <button onclick="editarUsuario(${usuario.id})">
+                                    ✏️
+                                </button>
 
-                        <button
-                            onclick="toggleUsuarioUI(${usuario.id})"
-                        >
-                            ${
-                                usuario.activo
-                                ? "Desactivar"
-                                : "Activar"
-                            }
-                        </button>
+                                <button onclick="toggleUsuarioUI(${usuario.id})">
+                                    ${usuario.activo ? "⛔" : "✅"}
+                                </button>
 
-                    </div>
+                                <button onclick="eliminarUsuario(${usuario.id})">
+                                    🗑
+                                </button>
 
-                `).join("")}
+                            </td>
 
-            </div>
+                        </tr>
 
+                    `).join("")}
+
+                </tbody>
+
+            </table>
         `;
 
     }
     catch (error) {
 
-        console.error(
-            "Error usuarios:",
-            error
-        );
+        console.error("Error usuarios:", error);
 
-        mostrarError(
-            "No se pudieron cargar los usuarios"
-        );
+        mostrarError("No se pudieron cargar los usuarios");
 
     }
 
@@ -159,6 +147,30 @@ async function toggleUsuarioUI(userId) {
 
 }
 
+// ===============================
+// NUEVO USUARIO (FASE SIGUIENTE)
+// ===============================
+
+function mostrarFormularioCrear() {
+    alert("Aquí irá el formulario de creación");
+}
+
+// ===============================
+// EDITAR USUARIO
+// ===============================
+
+function editarUsuario(id) {
+    alert("Editar usuario ID: " + id);
+}
+
+// ===============================
+// ELIMINAR USUARIO
+// ===============================
+
+function eliminarUsuario(id) {
+    alert("Eliminar usuario ID: " + id);
+}
+
 
 // ===============================
 // EXPOSICIÓN GLOBAL
@@ -169,3 +181,7 @@ window.cargarUsuarios =
 
 window.toggleUsuarioUI =
     toggleUsuarioUI;
+
+window.mostrarFormularioCrear = mostrarFormularioCrear;
+window.editarUsuario = editarUsuario;
+window.eliminarUsuario = eliminarUsuario;

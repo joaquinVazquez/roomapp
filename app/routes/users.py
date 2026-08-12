@@ -12,6 +12,8 @@ from app.schemas.usuario import UsuarioCreate
 from app.core.security import hash_password
 from app.core.security import get_current_user
 
+from app.core.permissions import require_permiso
+
 router = APIRouter(
     prefix="/users",
     tags=["Usuarios"]
@@ -83,20 +85,15 @@ def create_user(
 # LISTAR USUARIOS
 # =========================
 
-@router.get("/")
+@router.get(
+    "/",
+    dependencies=[
+        Depends(require_permiso("GESTIONAR_USUARIOS"))
+    ]
+)
 def get_users(
-    db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-
-    # Solo administrador
-    if current_user.rol.nombre != "ADMINISTRADOR":
-
-        raise HTTPException(
-            status_code=403,
-            detail="No tiene permisos para consultar usuarios"
-        )
-
 
     usuarios = (
         db.query(Usuario)
@@ -105,9 +102,7 @@ def get_users(
         .all()
     )
 
-
     resultado = []
-
 
     for usuario in usuarios:
 
@@ -126,7 +121,6 @@ def get_users(
             "activo": usuario.activo
 
         })
-
 
     return resultado
 
