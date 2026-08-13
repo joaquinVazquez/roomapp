@@ -7,6 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
 )
 
 from sqlalchemy.orm import relationship
@@ -18,6 +19,14 @@ class Grupo(Base):
 
     __tablename__ = "grupos"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "clave",
+            "periodo_academico_id",
+            name="uq_grupo_clave_periodo"
+        ),
+    )
+
     id = Column(
         Integer,
         primary_key=True,
@@ -26,7 +35,6 @@ class Grupo(Base):
 
     clave = Column(
         String(30),
-        unique=True,
         nullable=False,
         index=True
     )
@@ -66,18 +74,17 @@ class Grupo(Base):
     programa = relationship(
         "Programa",
         back_populates="grupos"
-        )
-    
+    )
+
     periodo_academico = relationship(
         "PeriodoAcademico",
         back_populates="grupos"
     )
 
     actividades_academicas = relationship(
-    "ActividadAcademica",
-    back_populates="grupo"
+        "ActividadAcademica",
+        back_populates="grupo"
     )
-
 
     inscripciones = relationship(
         "Inscripcion",
