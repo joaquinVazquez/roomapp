@@ -46,14 +46,11 @@ class PeriodoAcademico(Base):
         nullable=False
     )
 
+    # Indica si el periodo está habilitado dentro del sistema.
+    # No significa necesariamente que esté actualmente en curso.
     activo = Column(
         Boolean,
-        default=True
-    )
-
-    vigente = Column(
-        Boolean,
-        default=False,
+        default=True,
         nullable=False
     )
 

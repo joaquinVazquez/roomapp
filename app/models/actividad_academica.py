@@ -13,18 +13,20 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
+
 class ActividadAcademica(Base):
 
     __tablename__ = "actividades_academicas"
 
     __table_args__ = (
-    UniqueConstraint(
-        "grupo_id",
-        "materia_id",
-        "bloque",
-        name="uq_grupo_materia_bloque"
-    ),
-)
+        UniqueConstraint(
+            "grupo_id",
+            "materia_id",
+            "bloque",
+            "periodo_academico_id",
+            name="uq_grupo_materia_bloque_periodo"
+        ),
+    )
 
     id = Column(
         Integer,
@@ -47,6 +49,12 @@ class ActividadAcademica(Base):
     docente_id = Column(
         Integer,
         ForeignKey("usuarios.id"),
+        nullable=False
+    )
+
+    periodo_academico_id = Column(
+        Integer,
+        ForeignKey("periodos_academicos.id"),
         nullable=False
     )
 
@@ -80,8 +88,11 @@ class ActividadAcademica(Base):
         back_populates="actividades_academicas"
     )
 
-    horarios = relationship(
-    "Horario",
-    back_populates="actividad_academica"
+    periodo_academico = relationship(
+        "PeriodoAcademico"
     )
-    
+
+    horarios = relationship(
+        "Horario",
+        back_populates="actividad_academica"
+    )
