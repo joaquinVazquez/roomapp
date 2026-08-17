@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from app.models.horario import Horario
 from app.models.actividad_academica import ActividadAcademica
 from app.models.aula import Aula
-from app.models.usuario import Usuario
 
 from app.services.notificacion_service import crear_notificacion
 from app.services.inscripcion_service import obtener_estudiantes_por_grupo
@@ -22,7 +21,7 @@ def validar_conflictos(db: Session, horario_data):
     if not actividad:
         raise HTTPException(404, "Actividad no encontrada")
 
-    # Aula
+    # CONFLICTO AULA
     if horario_data.aula_id:
         conflicto = db.query(Horario).filter(
             Horario.aula_id == horario_data.aula_id,
@@ -35,7 +34,7 @@ def validar_conflictos(db: Session, horario_data):
         if conflicto:
             raise HTTPException(400, "Aula ocupada")
 
-    # Docente
+    # CONFLICTO DOCENTE
     conflicto_docente = db.query(Horario).join(ActividadAcademica).filter(
         ActividadAcademica.docente_id == actividad.docente_id,
         Horario.dia_semana_id == horario_data.dia_semana_id,
@@ -47,7 +46,7 @@ def validar_conflictos(db: Session, horario_data):
     if conflicto_docente:
         raise HTTPException(400, "Docente ocupado")
 
-    # Grupo
+    # CONFLICTO GRUPO
     conflicto_grupo = db.query(Horario).join(ActividadAcademica).filter(
         ActividadAcademica.grupo_id == actividad.grupo_id,
         Horario.dia_semana_id == horario_data.dia_semana_id,
@@ -88,7 +87,6 @@ def reasignar_aula(db: Session, horario_id: int, nueva_aula_id: int):
 
     actividad = horario.actividad_academica
 
-    # Docente
     crear_notificacion(
         db=db,
         usuario_id=actividad.docente_id,
@@ -97,7 +95,6 @@ def reasignar_aula(db: Session, horario_id: int, nueva_aula_id: int):
         referencia_id=horario.id
     )
 
-    # Estudiantes
     estudiantes = obtener_estudiantes_por_grupo(db, actividad.grupo_id)
 
     for e in estudiantes:

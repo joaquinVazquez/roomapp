@@ -16,10 +16,8 @@ def obtener_horarios_docente(
 ):
 
     # =========================
-    # OBTENER PERIODO
+    # PERIODO
     # =========================
-    periodo = None
-
     if periodo_id:
         periodo = db.query(PeriodoAcademico).filter(
             PeriodoAcademico.id == periodo_id
@@ -36,12 +34,11 @@ def obtener_horarios_docente(
     horarios = (
         db.query(Horario)
         .join(Horario.actividad_academica)
-        .join(ActividadAcademica.grupo)
         .join(Horario.dia_semana)
         .outerjoin(Horario.aula)
         .filter(
             ActividadAcademica.docente_id == docente_id,
-            Grupo.periodo_academico_id == periodo.id,
+            ActividadAcademica.periodo_academico_id == periodo.id,
             Horario.activo == True
         )
         .order_by(
@@ -64,9 +61,22 @@ def obtener_horarios_docente(
             "aula": h.aula.nombre if h.aula else "SIN ASIGNAR"
         })
 
+    orden_dias = {
+        "Lunes": 1,
+        "Martes": 2,
+        "Miércoles": 3,
+        "Jueves": 4,
+        "Viernes": 5,
+        "Sábado": 6,
+        "Domingo": 7
+    }
+
     return {
         "dias": [
             {"dia": dia, "clases": clases}
-            for dia, clases in resultado.items()
+            for dia, clases in sorted(
+                resultado.items(),
+                key=lambda x: orden_dias.get(x[0], 99)
+            )
         ]
     }

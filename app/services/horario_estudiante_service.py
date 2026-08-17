@@ -12,40 +12,6 @@ from app.services.periodo_service import get_periodo_activo
 
 def obtener_horarios_estudiante(db: Session, usuario_id: int, periodo_id: int | None = None):
 
-    periodo = get_periodo_activo(db)
-
-    if not periodo:
-        return {"dias": []}
-
-    # =========================
-    # VALIDAR INSCRIPCIÓN
-    # =========================
-    inscripciones = (
-        db.query(Inscripcion)
-        .filter(
-            Inscripcion.usuario_id == usuario_id,
-            Inscripcion.periodo_academico_id == periodo.id,
-            Inscripcion.activo == True
-        )
-        .all()
-    )
-
-    if len(inscripciones) == 0:
-        return {"dias": []}
-
-    if len(inscripciones) > 1:
-        raise HTTPException(
-            status_code=400,
-            detail="El estudiante tiene múltiples inscripciones activas"
-        )
-
-    grupo_id = inscripciones[0].grupo_id
-
-    # =========================
-    # PERIODO
-    # =========================
-    periodo = None
-
     if periodo_id:
         periodo = db.query(PeriodoAcademico).filter(
             PeriodoAcademico.id == periodo_id
@@ -56,9 +22,21 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int, periodo_id: int | 
     if not periodo:
         return {"dias": []}
 
-    # =========================
-    # CONSULTAR HORARIOS
-    # =========================
+    inscripcion = (
+        db.query(Inscripcion)
+        .filter(
+            Inscripcion.usuario_id == usuario_id,
+            Inscripcion.periodo_academico_id == periodo.id,
+            Inscripcion.activo == True
+        )
+        .first()
+    )
+
+    if not inscripcion:
+        return {"dias": []}
+
+    grupo_id = inscripcion.grupo_id
+
     horarios = (
         db.query(Horario)
         .join(Horario.actividad_academica)
@@ -66,15 +44,13 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int, periodo_id: int | 
         .outerjoin(Horario.aula)
         .filter(
             ActividadAcademica.grupo_id == grupo_id,
+            ActividadAcademica.periodo_academico_id == periodo.id,
             Horario.activo == True
         )
         .order_by(Horario.dia_semana_id, Horario.hora_inicio)
         .all()
     )
 
-    # =========================
-    # FORMATEAR RESPUESTA
-    # =========================
     resultado = defaultdict(list)
 
     for h in horarios:
@@ -86,13 +62,24 @@ def obtener_horarios_estudiante(db: Session, usuario_id: int, periodo_id: int | 
             "docente": h.actividad_academica.docente.persona.nombre
         })
 
-    dias = []
+    orden_dias = {
+        "Lunes": 1,
+        "Martes": 2,
+        "Miércoles": 3,
+        "Jueves": 4,
+        "Viernes": 5,
+        "Sábado": 6,
+        "Domingo": 7
+    }
 
-    for dia, clases in resultado.items():
-        dias.append({
-            "dia": dia,
-            "clases": clases
-        })
+    dias_ordenados = sorted(
+        resultado.items(),
+        key=lambda x: orden_dias.get(x[0], 99)
+    )
 
-    return {"dias": dias}
-
+    return {
+        "dias": [
+            {"dia": dia, "clases": clases}
+            for dia, clases in dias_ordenados
+        ]
+    }

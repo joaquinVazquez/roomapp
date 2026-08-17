@@ -15,7 +15,7 @@ from app.routes import grupo
 from app.routes import notificaciones
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.periodo_debug import router as periodo_debug_router
-from app.routes import inscripciones
+from app.routes.inscripciones import router as inscripciones_router
 
 app = FastAPI()
 
@@ -50,7 +50,7 @@ app.include_router(actividades_academicas.router)
 app.include_router(grupo.router)
 app.include_router(notificaciones.router)
 app.include_router(periodo_debug_router)
-app.include_router(inscripciones.router)
+app.include_router(inscripciones_router)
 
 
 @app.get("/")
